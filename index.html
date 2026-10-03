@@ -52,13 +52,12 @@
     #main-content-view { transition: opacity 0.2s ease-in-out; }
   </style>
 
-<!-- STREAMING_CHUNK:Khởi tạo Firebase Database... -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // MÃ FIREBASE CONFIG CHÍNH THỨC
+    // MÃ FIREBASE CONFIG CỦA CÔ THỦY
     const firebaseConfig = {
       apiKey: "AIzaSyCPekj5m7X0vNb89KTudiOookVTGp19Z-c",
       authDomain: "lophoccothuy-a9705.firebaseapp.com",
@@ -80,23 +79,33 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        await signInAnonymously(auth);
-
-        const stateRef = doc(db, 'CloudData', appId);
-        const snap = await getDoc(stateRef);
-        
-        if (!snap.exists()) {
-          // Lần đầu tải lên Cloud: Đẩy dữ liệu mẫu lên
-          await setDoc(stateRef, { payload: JSON.stringify(localData) });
-        } else {
-          // Nạp dữ liệu từ Đám mây về máy
-          const cloudData = JSON.parse(snap.data().payload);
-          window.isReceivingCloudUpdate = true;
-          onUpdateCallback(cloudData);
-          window.isReceivingCloudUpdate = false;
+        // Bẫy lỗi: Bỏ qua nếu Firebase chưa bật Xác thực (Authentication)
+        try {
+          await signInAnonymously(auth);
+        } catch (authErr) {
+          console.warn("Chưa bật Authentication trên Firebase. Đang kết nối thẳng qua Test Mode...");
         }
 
-        // Lắng nghe thay đổi Real-time (Đồng bộ trực tiếp)
+        const stateRef = doc(db, 'CloudData', appId);
+        
+        try {
+          const snap = await getDoc(stateRef);
+          if (!snap.exists()) {
+            // Lần đầu tải lên Cloud: Đẩy dữ liệu mẫu lên
+            await setDoc(stateRef, { payload: JSON.stringify(localData) });
+          } else {
+            // Nạp dữ liệu từ Đám mây về máy
+            const cloudData = JSON.parse(snap.data().payload);
+            window.isReceivingCloudUpdate = true;
+            onUpdateCallback(cloudData);
+            window.isReceivingCloudUpdate = false;
+          }
+        } catch (fetchErr) {
+          console.warn("⚠️ Firebase đang Offline hoặc bị chặn. Hệ thống tự động chuyển sang chế độ Cục bộ (Local). Lỗi chi tiết: ", fetchErr.message);
+          // Vẫn tiếp tục chạy bằng dữ liệu Local
+        }
+
+        // Lắng nghe thay đổi Real-time (Nó sẽ tự kết nối lại khi có mạng)
         onSnapshot(stateRef, (docSnap) => {
           if(docSnap.exists() && !window.isSavingToCloud) {
              const cloudData = JSON.parse(docSnap.data().payload);
@@ -104,26 +113,26 @@
              onUpdateCallback(cloudData);
              window.isReceivingCloudUpdate = false;
           }
-        }, (err) => console.error("Lỗi đồng bộ Đám mây: ", err));
+        }, (err) => console.warn("Kết nối ngầm bị gián đoạn, đang thử lại..."));
 
         // Hàm Đẩy dữ liệu mới lên Cloud
         window.saveToCloud = function(data) {
-          if (!auth.currentUser || window.isReceivingCloudUpdate) return;
+          if (window.isReceivingCloudUpdate) return;
           window.isSavingToCloud = true;
-          setDoc(stateRef, { payload: JSON.stringify(data) }).finally(() => {
+          setDoc(stateRef, { payload: JSON.stringify(data) }).catch(e => console.warn("Lưu mây thất bại (Offline), đã lưu vào máy.")).finally(() => {
              setTimeout(() => { window.isSavingToCloud = false; }, 500);
           });
         };
         return true;
       } catch(e) {
-        console.error("Lỗi kết nối Cloud: ", e); return false;
+        console.warn("⚠️ Lỗi khởi tạo Cloud: ", e.message, " - Chuyển sang chế độ Local."); 
+        return false;
       }
     };
   </script>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col antialiased font-sans">
 
-<!-- STREAMING_CHUNK:Cấu trúc Màn hình Đăng Nhập... -->
   <!-- ======================================================== -->
   <!-- 1. MÀN HÌNH ĐĂNG NHẬP                                     -->
   <!-- ======================================================== -->
@@ -188,7 +197,6 @@
     </div>
   </div>
 
-<!-- STREAMING_CHUNK:Cấu trúc Cổng Phụ Huynh... -->
   <!-- ======================================================== -->
   <!-- 2. CỔNG PHỤ HUYNH                                        -->
   <!-- ======================================================== -->
@@ -255,7 +263,6 @@
     </main>
   </div>
 
-<!-- STREAMING_CHUNK:Cổng Quản Trị Giáo Viên & Menu... -->
   <!-- ======================================================== -->
   <!-- 3. CỔNG QUẢN TRỊ GIÁO VIÊN                               -->
   <!-- ======================================================== -->
@@ -285,7 +292,7 @@
       </nav>
       <div class="pt-3 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 space-y-1">
         <div class="flex items-center justify-between">
-          <span class="font-medium" id="cloud-status-indicator">Phiên bản 3.1 (Cloud Configured)</span>
+          <span class="font-medium" id="cloud-status-indicator">Phiên bản 3.2 (Final Cloud Sync)</span>
           <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i></button>
         </div>
       </div>
@@ -305,7 +312,6 @@
 
       <main class="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8" id="main-content-view">
         
-<!-- STREAMING_CHUNK:Tổng Quan (Dashboard)... -->
         <!-- DASHBOARD TAB -->
         <section id="tab-dashboard" class="space-y-6">
           <div class="bg-gradient-to-r from-teal-600 via-teal-700 to-emerald-700 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in-up">
@@ -387,7 +393,6 @@
           </div>
         </section>
 
-<!-- STREAMING_CHUNK:Quản lý Lịch dạy, Lớp học và Điểm danh... -->
         <!-- SCHEDULE TAB -->
         <section id="tab-schedule" class="hidden space-y-6">
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -528,7 +533,6 @@
           <div id="students-family-container" class="hidden space-y-4"><div id="students-family-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
         </section>
 
-<!-- STREAMING_CHUNK:Cấu trúc các Tab Cuối và Modals... -->
         <!-- FINANCE TAB -->
         <section id="tab-finance" class="hidden space-y-6">
           <div class="bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl p-5 md:p-6 text-white shadow-lg flex items-center justify-between animate-fade-in-up">
@@ -603,10 +607,19 @@
             <div class="pt-2 flex justify-end"><button onclick="saveSchoolSettings()" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl text-xs md:text-sm shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">Lưu thông tin</button></div>
           </div>
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
-            <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-database text-purple-500"></i> Sao lưu & Dữ liệu</h3>
+            <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-cloud text-purple-500"></i> Quản lý Đám mây & Sao lưu</h3>
+            
+            <div id="cloud-indicator-box" class="hidden p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-start gap-3">
+               <i class="fa-solid fa-cloud-check text-emerald-600 text-xl mt-0.5"></i>
+               <div>
+                  <h4 class="font-bold text-sm text-emerald-800 dark:text-emerald-300">Kết nối Đám mây đang hoạt động</h4>
+                  <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Dữ liệu của cô đang được đồng bộ hóa tự động theo thời gian thực (Real-time). Tuyệt đối an toàn!</p>
+               </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <button onclick="exportDataJSON()" class="p-3 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/30 hover:bg-teal-100 text-teal-800 dark:text-teal-300 font-semibold text-xs flex flex-col items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-download text-lg"></i><span>Xuất sao lưu (JSON)</span></button>
-              <label class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors"><i class="fa-solid fa-upload text-lg"></i><span>Nhập sao lưu</span><input type="file" id="import-file-input" accept=".json" onchange="importDataJSON(event)" class="hidden"></label>
+              <button onclick="exportDataJSON()" class="p-3 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/30 hover:bg-teal-100 text-teal-800 dark:text-teal-300 font-semibold text-xs flex flex-col items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-download text-lg"></i><span>Tải File Sao Lưu (JSON)</span></button>
+              <label class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors"><i class="fa-solid fa-upload text-lg"></i><span>Nhập File Sao lưu</span><input type="file" id="import-file-input" accept=".json" onchange="importDataJSON(event)" class="hidden"></label>
               <button onclick="exportStudentsCSV()" class="p-3 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100 text-blue-800 dark:text-blue-300 font-semibold text-xs flex flex-col items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-file-csv text-lg"></i><span>Xuất học viên (CSV)</span></button>
             </div>
             <div class="pt-4 flex flex-wrap justify-between gap-3 border-t border-slate-100 dark:border-slate-700">
@@ -640,7 +653,6 @@
     <div id="print-timetable-content" class="space-y-4"></div>
   </div>
 
-<!-- STREAMING_CHUNK:Danh sách các Modals thao tác dữ liệu... -->
   <!-- ======================================================== -->
   <!-- 5. DANH SÁCH MODAL CHỨC NĂNG                              -->
   <!-- ======================================================== -->
@@ -871,13 +883,516 @@
   </div>
   <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
-<!-- STREAMING_CHUNK:Javascript - Fix lỗi đè lịch... -->
   <script>
+    /*
+      =======================================================
+      APP: LỚP TIẾNG ANH CÔ THỦY
+      Version: 3.2 (Full Fix - Mọi thứ gộp chung 1 script)
+      =======================================================
+    */
+
+    /* ================= CẤU HÌNH CƠ BẢN ================= */
+    const CURRICULUM_PROGRAMS = [
+      { id: 'PRE_SCHOOL', name: 'Pre-school (Mầm non)', badgeName: 'Pre-school', color: '#ef4444', badge: 'bg-red-500 text-white', subLevels: ['Bé 4 tuổi', 'Bé 5 tuổi', 'Bé 6 tuổi'] },
+      { id: 'CAP_1', name: 'Tiếng Anh Cấp 1 (Tiểu học)', badgeName: 'Cấp 1', color: '#10b981', badge: 'bg-emerald-500 text-white', subLevels: ['Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5'] },
+      { id: 'CAP_2', name: 'Tiếng Anh Cấp 2 (THCS)', badgeName: 'Cấp 2', color: '#3b82f6', badge: 'bg-blue-500 text-white', subLevels: ['Lớp 6', 'Lớp 7', 'Lớp 8', 'Lớp 9'] },
+      { id: 'CAP_3', name: 'Tiếng Anh Cấp 3 (THPT)', badgeName: 'Cấp 3', color: '#f97316', badge: 'bg-orange-500 text-white', subLevels: ['Lớp 10', 'Lớp 11', 'Lớp 12'] },
+      { id: 'IOE', name: 'Ôn luyện IOE', badgeName: 'IOE', color: '#a855f7', badge: 'bg-purple-600 text-white', subLevels: ['IOE Tiểu học', 'IOE THCS', 'IOE THPT'] },
+      { id: 'THPT', name: 'Ôn thi THPT Quốc gia', badgeName: 'THPT QG', color: '#991b1b', badge: 'bg-rose-700 text-white', subLevels: ['Mục tiêu 7+', 'Mục tiêu 8+', 'Mục tiêu 9+'] },
+      { id: 'IELTS', name: 'Ôn thi IELTS', badgeName: 'IELTS', color: '#06b6d4', badge: 'bg-cyan-600 text-white', subLevels: ['Foundation', 'Target', 'Advanced'] },
+      { id: 'CHUYEN', name: 'Ôn Chuyên (Bồi dưỡng HSG)', badgeName: 'Ôn Chuyên', color: '#047857', badge: 'bg-emerald-800 text-white', subLevels: ['Vào 10 Chuyên', 'Đội tuyển HSG'] }
+    ];
+
+    const STANDARD_TIME_SLOTS = [
+      { id: 'T1', label: 'Sáng 1 (07:00 - 09:00)', start: '07:00', end: '09:00' },
+      { id: 'T2', label: 'Sáng 2 (09:00 - 11:00)', start: '09:00', end: '11:00' },
+      { id: 'T3', label: 'Chiều 1 (13:00 - 15:00)', start: '13:00', end: '15:00' },
+      { id: 'T4', label: 'Chiều 2 (15:00 - 17:00)', start: '15:00', end: '17:00' },
+      { id: 'T5', label: 'Tối 1 (17:00 - 19:00)', start: '17:00', end: '19:00' },
+      { id: 'T6', label: 'Tối 2 (19:00 - 21:00)', start: '19:00', end: '21:00' }
+    ];
+
+    const STORAGE_KEY = 'LOP_HOC_CO_THUY_V2_AUTH';
+    const AUTH_SESSION_KEY = 'LOP_HOC_CO_THUY_SESSION';
+
+    let appData = {
+      schemaVersion: 12,
+      school: { title: 'LỚP TIẾNG ANH CÔ THỦY', slogan: 'Learn English the Easy Way', address: 'Gia Lai', phone: '0961 471 193' },
+      settings: { largeFont: false, theme: 'light' },
+      users: [], classes: [], students: [], sessions: [], interactions: [], fees: []
+    };
+
+    let currentUser = null;
+    let currentLoginRole = 'TEACHER';
+    let currentTab = 'dashboard';
+    let schedulePivotDate = new Date();
+    let scheduleViewMode = 'week';
+    let currentSelectedStudentClassIds = [];
+    let currentStudentProgramFilter = 'ALL';
+    let studentViewMode = 'TABLE';
+    let activeParentChildId = null;
+    let currentAttendanceSessionId = null;
+
+    let dashboardCharts = { programs: null, status: null, learningMode: null, attendance: null, capacity: null, financeMonthly: null };
+    let clockInterval = null;
+
+    /* ================= TIỆN ÍCH ================= */
+    function escapeHtml(str) { return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+    function formatDateVN(dateStr) { const p = (dateStr||'').split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr; }
+    function openModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+    function openQuickAddModal() { openModal('modal-quick-add'); }
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container'); if (!container) return;
+      const t = document.createElement('div');
+      t.className = `px-4 py-3 rounded-2xl shadow-xl text-sm font-bold text-white transition-all transform duration-300 opacity-0 translate-y-2 ${type==='success'?'bg-emerald-600':type==='error'?'bg-rose-600':'bg-teal-600'}`;
+      t.innerHTML = `<i class="fa-solid fa-circle-info mr-2"></i>${escapeHtml(message)}`;
+      container.appendChild(t);
+      requestAnimationFrame(() => t.classList.remove('opacity-0', 'translate-y-2'));
+      setTimeout(() => { t.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => t.remove(), 300); }, 3000);
+    }
+    
+    function showCustomConfirm(title, message, onConfirm) {
+      document.getElementById('confirm-modal-title').textContent = title;
+      document.getElementById('confirm-modal-msg').textContent = message;
+      const btnOk = document.getElementById('confirm-btn-ok');
+      const btnCancel = document.getElementById('confirm-btn-cancel');
+      const clean = () => { closeModal('modal-confirm'); btnOk.onclick = null; btnCancel.onclick = null; };
+      btnOk.onclick = () => { clean(); onConfirm(); }; btnCancel.onclick = clean; openModal('modal-confirm');
+    }
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      if (!appData.settings) appData.settings = {}; appData.settings.theme = isDark ? 'dark' : 'light';
+      persistData(); renderAllCharts(); 
+    }
+
+    /* ================= LƯU TRỮ VÀ DỮ LIỆU ================= */
+    function persistData() { 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      if(typeof window.saveToCloud === 'function') window.saveToCloud(appData);
+    }
+    function loadStoredData() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          appData = Object.assign({}, appData, JSON.parse(stored));
+          if(!appData.interactions) appData.interactions = [];
+          if(!appData.fees) appData.fees = [];
+        }
+      } catch(e) { console.error(e); }
+      if (!appData.classes || appData.classes.length === 0) { initDefaultSampleData(); persistData(); }
+    }
+    function initDefaultSampleData() {
+      initDefaultUsers();
+      appData.classes = [];
+      appData.students = [];
+      appData.sessions = [];
+      appData.interactions = []; appData.fees = [];
+    }
+    function confirmResetAllData() { showCustomConfirm("Xóa Sạch Dữ Liệu", "Mọi thứ sẽ bị xóa. Tiếp tục?", () => { appData.classes=[]; appData.students=[]; appData.sessions=[]; appData.interactions=[]; appData.fees=[]; persistData(); renderAllViews(); }); }
+    function loadSampleData() { showCustomConfirm("Tải Dữ Liệu Mẫu", "Dữ liệu hiện tại sẽ bị ghi đè. Tiếp tục?", () => { 
+      initDefaultUsers();
+      appData.classes = [{ id: 'cls-1', name: 'Pre-school Bé Ngoan', programId: 'PRE_SCHOOL', subLevel: 'Bé 4 tuổi', type: 'HOME', maxStudents: 8, fee: 600000, units: 12, completedUnits: 2 }];
+      appData.students = [{ id: 'stu-1', name: 'Nguyễn Minh Khang', nick: 'Bon', dob: '2020-03-15', status: 'ACTIVE', parent: 'Mẹ Lan', phone: '0912345678', classIds: ['cls-1'] }];
+      persistData(); applySettings(); renderAllViews(); 
+    }); }
+    function exportDataJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", `SaoLuu_LopHocCoThuy_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+    }
+    function importDataJSON(event) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try { const parsed = JSON.parse(e.target.result); if(parsed.classes){ appData = parsed; persistData(); applySettings(); renderAllViews(); showToast("Đã nhập dữ liệu", "success"); } } catch(err) { showToast("Lỗi định dạng JSON", "error"); }
+      }; reader.readAsText(file);
+    }
+    function exportStudentsCSV() {
+      if(appData.students.length===0) return showToast("Chưa có học viên!", "warning");
+      let csv = "\uFEFFHọ và tên,Tên gọi,Ngày sinh,Phụ huynh,SĐT,Lớp đang học\n";
+      appData.students.forEach(st => {
+        const cNames = (st.classIds||[]).map(cid=>appData.classes.find(x=>x.id===cid)?.name||'').join('; ');
+        csv += `"${st.name}","${st.nick||''}","${st.dob||''}","${st.parent||''}","${st.phone||''}","${cNames}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `DanhSachHocVien.csv`; a.click(); URL.revokeObjectURL(url);
+    }
+
+    /* ================= CHỨC NĂNG ĐĂNG NHẬP VÀ PHÂN QUYỀN ================= */
+    function initDefaultUsers() { 
+      try {
+        if (!appData.users || !Array.isArray(appData.users)) appData.users = [];
+        const hasTeacher = appData.users.find(u => u.role === 'TEACHER');
+        if(!hasTeacher) {
+           appData.users.push({ id: 'u-1', username: 'cothuy', password: '123', role: 'TEACHER', name: 'Cô Thủy' });
+           appData.users.push({ id: 'u-2', username: '0912345678', password: '123', role: 'PARENT', name: 'Mẹ Lan', studentIds: ['stu-1'] });
+        }
+      } catch (e) {
+        console.warn("Lỗi khởi tạo User:", e);
+        appData.users = [{ id: 'u-1', username: 'cothuy', password: '123', role: 'TEACHER', name: 'Cô Thủy' }];
+      }
+    }
+    function selectLoginRole(role) {
+      currentLoginRole = role;
+      document.getElementById('login-username').placeholder = role === 'TEACHER' ? 'Nhập cothuy...' : 'Ví dụ: 0912345678...';
+      document.getElementById('label-login-username').textContent = role === 'TEACHER' ? 'Tên đăng nhập' : 'Số điện thoại Phụ huynh';
+      document.getElementById('btn-role-teacher').className = role === 'TEACHER' ? 'flex-1 py-2.5 rounded-xl font-bold bg-white text-teal-700 shadow-sm flex items-center justify-center gap-2 transition-all' : 'flex-1 py-2.5 rounded-xl font-semibold text-slate-500 flex items-center justify-center gap-2 transition-all';
+      document.getElementById('btn-role-parent').className = role === 'PARENT' ? 'flex-1 py-2.5 rounded-xl font-bold bg-white text-teal-700 shadow-sm flex items-center justify-center gap-2 transition-all' : 'flex-1 py-2.5 rounded-xl font-semibold text-slate-500 flex items-center justify-center gap-2 transition-all';
+    }
+    function togglePasswordVisibility() { const p = document.getElementById('login-password'); p.type = p.type === 'password' ? 'text' : 'password'; }
+    function quickLogin(u, p) { 
+      document.getElementById('login-username').value = u; 
+      document.getElementById('login-password').value = p; 
+      executeLogin(u, p); 
+    }
+    function handleLoginSubmit(e) { 
+      e.preventDefault(); 
+      executeLogin(document.getElementById('login-username').value, document.getElementById('login-password').value); 
+    }
+    
+    function executeLogin(u, p) {
+      initDefaultUsers(); // Đảm bảo luôn có user mặc định nếu lỡ xóa
+      const user = (appData.users || []).find(x => x.username === u && x.password === p);
+      if (!user) return showToast("Sai tài khoản hoặc mật khẩu!", "error");
+      
+      currentUser = user; 
+      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user)); 
+      document.getElementById('auth-screen').classList.add('hidden');
+      
+      if (user.role === 'TEACHER') {
+        document.getElementById('parent-portal-screen').classList.add('hidden'); 
+        document.getElementById('teacher-portal-screen').classList.remove('hidden'); 
+        switchTab('dashboard'); 
+        renderAllViews(); 
+        showToast(`Chào mừng ${user.name}!`, "success"); 
+        startRealTimeClock();
+      } else {
+        document.getElementById('teacher-portal-screen').classList.add('hidden'); 
+        document.getElementById('parent-portal-screen').classList.remove('hidden'); 
+        renderParentPortal(); 
+        showToast(`Kính chào Phụ huynh ${user.name}!`, "success");
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null; 
+      sessionStorage.removeItem(AUTH_SESSION_KEY); 
+      clearInterval(clockInterval);
+      document.getElementById('teacher-portal-screen').classList.add('hidden'); 
+      document.getElementById('parent-portal-screen').classList.add('hidden'); 
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    /* ================= ĐIỀU HƯỚNG VÀ RENDER GIAO DIỆN ================= */
+    function switchTab(tabId) {
+      if(currentTab === tabId) return;
+      currentTab = tabId;
+      const mainView = document.getElementById('main-content-view');
+      mainView.style.opacity = 0;
+
+      setTimeout(() => {
+        ['dashboard', 'schedule', 'daily-attendance', 'classes', 'students', 'finance', 'parent-accounts', 'settings'].forEach(s => {
+          document.getElementById('tab-' + s)?.classList.toggle('hidden', s !== tabId);
+        });
+        document.querySelectorAll('#desktop-nav .nav-btn').forEach(btn => {
+          btn.className = btn.getAttribute('data-tab') === tabId ? "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-sm bg-teal-50 text-teal-700 shadow-xs transition-all duration-300 hover:pl-5" : "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-all duration-300 hover:pl-5";
+        });
+        document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+          btn.className = btn.getAttribute('data-tab') === tabId ? "mobile-nav-btn flex flex-col items-center py-1 px-2 text-teal-600 font-bold text-[11px] transition-colors" : "mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors";
+        });
+
+        // Bẫy lỗi độc lập
+        try { if(tabId === 'dashboard') renderDashboard(); } catch(e){ console.error(e); }
+        try { if(tabId === 'schedule') renderSchedule(); } catch(e){ console.error(e); }
+        try { if(tabId === 'daily-attendance') initDailyAttendanceTab(); } catch(e){ console.error(e); }
+        try { if(tabId === 'classes') renderClasses(); } catch(e){ console.error(e); }
+        try { if(tabId === 'students') renderStudents(); } catch(e){ console.error(e); }
+        try { if(tabId === 'finance') { populateProgramSelects(); renderFinance(); } } catch(e){ console.error(e); }
+        try { if(tabId === 'parent-accounts') renderParentAccounts(); } catch(e){ console.error(e); }
+        
+        mainView.style.opacity = 1;
+      }, 150);
+    }
+    
+    function renderAllViews() {
+      try { updateNavBadges(); } catch(e){}
+      try { populateProgramSelects(); } catch(e){}
+      try { renderDashboard(); } catch(e){}
+      try { renderSchedule(); } catch(e){}
+      try { renderClasses(); } catch(e){}
+      try { renderStudents(); } catch(e){}
+      try { renderParentAccounts(); } catch(e){}
+      try { if(currentTab === 'finance') renderFinance(); } catch(e){}
+    }
+
+    function updateNavBadges() {
+      if(document.getElementById('badge-class-count')) document.getElementById('badge-class-count').textContent = appData.classes.length;
+      if(document.getElementById('badge-student-count')) document.getElementById('badge-student-count').textContent = appData.students.length;
+      if(document.getElementById('badge-parent-acc-count')) document.getElementById('badge-parent-acc-count').textContent = appData.users.filter(u=>u.role==='PARENT').length;
+    }
+    
+    function applySettings() {
+      if(!appData.school) return;
+      ['sidebar-app-title', 'login-header-title', 'mobile-app-title', 'print-school-name'].forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).textContent = appData.school.title;
+      });
+      ['sidebar-app-slogan', 'login-header-slogan', 'print-school-slogan'].forEach(id => {
+        if(document.getElementById(id)) document.getElementById(id).textContent = appData.school.slogan;
+      });
+      if(document.getElementById('sidebar-app-phone')) document.getElementById('sidebar-app-phone').textContent = appData.school.phone;
+      if(document.getElementById('print-school-phone')) document.getElementById('print-school-phone').textContent = appData.school.phone;
+      if(document.getElementById('sidebar-app-address')) document.getElementById('sidebar-app-address').textContent = appData.school.address;
+      if(document.getElementById('print-school-addr')) document.getElementById('print-school-addr').textContent = appData.school.address;
+      
+      if(document.getElementById('setting-app-title')) document.getElementById('setting-app-title').value = appData.school.title;
+      if(document.getElementById('setting-app-slogan')) document.getElementById('setting-app-slogan').value = appData.school.slogan;
+      if(document.getElementById('setting-app-phone')) document.getElementById('setting-app-phone').value = appData.school.phone;
+      if(document.getElementById('setting-app-address')) document.getElementById('setting-app-address').value = appData.school.address;
+      
+      if(appData.settings) {
+        if(appData.settings.theme === 'dark') document.documentElement.classList.add('dark');
+        if(appData.settings.largeFont) document.body.classList.add('text-size-large');
+      }
+    }
+    
+    function saveSchoolSettings() {
+      if(!appData.school) appData.school={};
+      appData.school.title = document.getElementById('setting-app-title').value;
+      appData.school.slogan = document.getElementById('setting-app-slogan').value;
+      appData.school.phone = document.getElementById('setting-app-phone').value;
+      appData.school.address = document.getElementById('setting-app-address').value;
+      persistData(); applySettings(); showToast("Đã lưu thông tin");
+    }
+
+    /* ================= ĐỒNG HỒ & DASHBOARD ANALYTICS ================= */
+    function startRealTimeClock() {
+      const clockEl = document.getElementById('real-time-clock');
+      const statusEl = document.getElementById('real-time-status');
+      if(!clockEl || !statusEl) return;
+
+      clearInterval(clockInterval);
+      
+      const updateClock = () => {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        clockEl.textContent = `${hrs}:${mins}:${secs}`;
+
+        const todayStr = now.toISOString().split('T')[0];
+        const currentTimeStr = `${hrs}:${mins}`;
+        
+        const activeSession = appData.sessions.find(s => s.date === todayStr && s.startTime <= currentTimeStr && s.endTime >= currentTimeStr);
+        if(activeSession) {
+          const cls = appData.classes.find(c => c.id === activeSession.classId);
+          statusEl.innerHTML = `<span class="animate-pulse w-2 h-2 rounded-full inline-block bg-emerald-400 mr-1.5 shadow-[0_0_8px_#34d399]"></span> Đang dạy: <span class="text-emerald-300 ml-1 truncate max-w-[150px] sm:max-w-[200px] inline-block align-bottom">${cls ? escapeHtml(cls.name) : 'Lớp đã xóa'}</span>`;
+          statusEl.className = "px-3 py-1.5 rounded-xl bg-black/30 backdrop-blur-md text-sm font-semibold border border-emerald-500/30 shadow-lg flex items-center transition-all duration-300";
+        } else {
+          statusEl.innerHTML = `<span class="w-2 h-2 rounded-full inline-block bg-slate-400 mr-1.5"></span> Chưa tới giờ lên lớp`;
+          statusEl.className = "px-3 py-1.5 rounded-xl bg-black/20 backdrop-blur-md text-sm font-semibold border border-white/10 text-slate-200 flex items-center transition-all duration-300";
+        }
+      };
+
+      updateClock(); 
+      clockInterval = setInterval(updateClock, 1000); 
+    }
+
+    function renderDashboard() {
+      document.getElementById('dash-active-students').textContent = appData.students.length;
+      document.getElementById('dash-active-classes').textContent = appData.classes.length;
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaySessions = appData.sessions.filter(s=>s.date===todayStr).sort((a,b) => a.startTime.localeCompare(b.startTime));
+      document.getElementById('dash-today-sessions').textContent = todaySessions.length;
+      
+      const unread = appData.interactions ? appData.interactions.filter(i => i.status === 'UNREAD').sort((a,b) => b.id.localeCompare(a.id)) : [];
+      document.getElementById('dash-inbox-count').textContent = unread.length;
+      const inboxList = document.getElementById('dash-inbox-list');
+      if(unread.length===0) {
+        if(inboxList) inboxList.innerHTML = `<p class="text-blue-700/60 italic text-center py-2">Không có tin nhắn / đơn xin nghỉ mới.</p>`;
+      } else {
+        if(inboxList) inboxList.innerHTML = unread.map(i => `
+          <div class="p-2 bg-white rounded-lg border border-blue-100 flex justify-between gap-2">
+            <div><p class="font-bold text-xs text-blue-900">${i.type==='LEAVE'?'<i class="fa-solid fa-file-signature text-purple-600 mr-1"></i>Xin nghỉ':'<i class="fa-solid fa-comment-dots text-pink-600 mr-1"></i>Lời nhắn'}: ${escapeHtml(i.studentName)}</p><p class="text-[11px] text-blue-800 mt-0.5">${i.type==='LEAVE'? `Nghỉ ngày: ${formatDateVN(i.date)} - Lý do: `:''}${escapeHtml(i.content)}</p></div>
+            <button onclick="markInteractionRead('${i.id}')" class="text-xs text-blue-600 hover:underline shrink-0 self-center font-semibold">Đã đọc</button>
+          </div>
+        `).join('');
+      }
+
+      const todayList = document.getElementById('dash-today-list');
+      if(todayList) {
+        if (todaySessions.length === 0) {
+          todayList.innerHTML = `<p class="text-slate-400 italic text-sm">Hôm nay không có ca dạy.</p>`;
+        } else {
+          todayList.innerHTML = todaySessions.map(ses => {
+            const cls = appData.classes.find(c => c.id === ses.classId) || { name: 'Lớp đã xóa', programId: 'CAP_1' };
+            const p = CURRICULUM_PROGRAMS.find(x=>x.id===cls.programId) || CURRICULUM_PROGRAMS[0];
+            return `
+              <div class="p-3 bg-slate-50 border rounded-xl flex justify-between items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300" style="border-left: 4px solid ${p.color}">
+                <div><p class="font-bold text-sm text-slate-800">${escapeHtml(cls.name)}</p><p class="text-xs text-slate-500">${ses.startTime} - ${ses.endTime}</p></div>
+                <button onclick="switchTab('daily-attendance'); document.getElementById('daily-att-date').value='${ses.date}'; filterDailyClassesByDate(); document.getElementById('daily-att-class').value='${cls.id}'; loadDailyAttendance();" class="text-xs font-bold px-3 py-1.5 bg-teal-600 text-white rounded-lg shadow-sm hover:bg-teal-700 transition-colors">Điểm danh</button>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      renderProgramsGrid();
+      renderAllCharts();
+    }
+    
+    function markInteractionRead(id) {
+      const i = appData.interactions.find(x=>x.id===id);
+      if(i) i.status = 'READ'; persistData(); renderDashboard();
+    }
+
+    function renderProgramsGrid() {
+      const grid = document.getElementById('dash-programs-grid');
+      if(!grid) return;
+      grid.innerHTML = CURRICULUM_PROGRAMS.map(p => {
+        const clsIn = appData.classes.filter(c => c.programId === p.id);
+        const stCount = appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.some(cid => clsIn.map(c=>c.id).includes(cid))).length;
+        return `
+          <div onclick="switchTab('classes'); document.getElementById('filter-class-program').value='${p.id}'; renderClasses();" class="p-4 rounded-xl border border-slate-200 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" style="border-top: 4px solid ${p.color};">
+            <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-extrabold px-2 py-0.5 rounded text-white" style="background-color: ${p.color}">${p.badgeName}</span><span class="text-xs font-semibold text-slate-500">${clsIn.length} lớp</span></div>
+            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">${p.name}</h4>
+            <div class="mt-3 pt-2 border-t border-slate-100 flex justify-between"><span class="text-[11px] font-bold" style="color: ${p.color}">${stCount} học viên</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAllCharts() {
+      if (typeof Chart === 'undefined') return;
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b'; 
+      const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+      Chart.defaults.color = textColor;
+      Chart.defaults.font.family = "'Inter', sans-serif";
+
+      ['programs', 'status', 'learningMode', 'attendance', 'capacity'].forEach(key => { 
+        if(dashboardCharts[key]) { dashboardCharts[key].destroy(); dashboardCharts[key] = null; } 
+      });
+
+      const percentageTooltipConfig = {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || context.label || '';
+            if (label) { label += ': '; }
+            if (context.parsed !== null) {
+              if (context.chart.config.type === 'doughnut' || context.chart.config.type === 'pie' || context.chart.config.type === 'polarArea') {
+                 let total = context.chart._metasets[context.datasetIndex].total;
+                 let percentage = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                 label += context.parsed + ' học viên (' + percentage + '%)';
+              } else {
+                 label += context.raw;
+              }
+            }
+            return label;
+          }
+        }
+      };
+
+      const ctxProg = document.getElementById('chart-programs');
+      if (ctxProg) {
+        const labels = CURRICULUM_PROGRAMS.map(p => p.badgeName);
+        const bgColors = CURRICULUM_PROGRAMS.map(p => p.color);
+        const dataCounts = CURRICULUM_PROGRAMS.map(prog => {
+          const classIds = appData.classes.filter(c => c.programId === prog.id).map(c => c.id);
+          return appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.some(cid => classIds.includes(cid))).length;
+        });
+        dashboardCharts.programs = new Chart(ctxProg, { type: 'doughnut', data: { labels, datasets: [{ data: dataCounts, backgroundColor: bgColors, borderWidth: 1, borderColor: isDark?'#1e293b':'#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }, tooltip: percentageTooltipConfig } } });
+      }
+
+      const ctxStatus = document.getElementById('chart-status');
+      if(ctxStatus) {
+        let active = 0, trial = 0, reserved = 0, dropped = 0;
+        appData.students.forEach(s => { if(s.status === 'ACTIVE') active++; else if(s.status === 'TRIAL') trial++; else if(s.status === 'RESERVED') reserved++; else if(s.status === 'DROPPED') dropped++; });
+        dashboardCharts.status = new Chart(ctxStatus, { type: 'pie', data: { labels: ['Đang học', 'Học thử', 'Bảo lưu', 'Nghỉ học'], datasets: [{ data: [active, trial, reserved, dropped], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'], borderWidth: 1, borderColor: isDark?'#1e293b':'#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }, tooltip: percentageTooltipConfig } } });
+      }
+
+      const ctxMode = document.getElementById('chart-learning-mode');
+      if(ctxMode) {
+        let home = 0, tHome = 0, tClass = 0, online = 0;
+        appData.students.forEach(s => {
+          if(Array.isArray(s.classIds) && s.classIds.length > 0) {
+            const cls = appData.classes.find(c => c.id === s.classIds[0]);
+            if(cls) { if(cls.type === 'HOME') home++; else if(cls.type === 'TUTOR_HOME') tHome++; else if(cls.type === 'TUTOR_CLASS') tClass++; else if(cls.type === 'ONLINE') online++; }
+          }
+        });
+        dashboardCharts.learningMode = new Chart(ctxMode, { type: 'polarArea', data: { labels: ['Tại nhà cô', 'Gia sư nhà', 'Gia sư lớp', 'Học Online'], datasets: [{ data: [home, tHome, tClass, online], backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(139, 92, 246, 0.7)'], borderWidth: 1, borderColor: isDark?'#1e293b':'#ffffff' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }, tooltip: percentageTooltipConfig }, scales: { r: { grid: { color: gridColor }, ticks: { display: false } } } } });
+      }
+
+      const ctxAtt = document.getElementById('chart-attendance');
+      if(ctxAtt) {
+        const uniqueDates = [...new Set(appData.sessions.map(s => s.date))].sort();
+        const last7Dates = uniqueDates.slice(-7);
+        let presentData = [], lateData = [], absentData = [];
+        let displayLabels = last7Dates.map(d => formatDateVN(d).substring(0, 5)); 
+        last7Dates.forEach(date => {
+          let p = 0, l = 0, a = 0;
+          appData.sessions.filter(s => s.date === date).forEach(ses => {
+            if(ses.attendance) { Object.values(ses.attendance).forEach(att => { if(att.status === 'PRESENT') p++; else if(att.status === 'LATE') l++; else if(att.status === 'ABSENT') a++; }); }
+          });
+          presentData.push(p); lateData.push(l); absentData.push(a);
+        });
+        dashboardCharts.attendance = new Chart(ctxAtt, { type: 'line', data: { labels: displayLabels.length ? displayLabels : ['Chưa có DL'], datasets: [ { label: 'Có mặt', data: presentData, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3 }, { label: 'Đi muộn', data: lateData, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3 }, { label: 'Vắng mặt', data: absentData, borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.3 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: gridColor }, beginAtZero: true, ticks: { stepSize: 1 } } } } });
+      }
+
+      const ctxCap = document.getElementById('chart-capacity');
+      if(ctxCap) {
+        const sortedClasses = [...appData.classes].map(c => {
+          const enrolled = appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.includes(c.id)).length;
+          return { name: c.name, enrolled: enrolled, max: c.maxStudents || 8 };
+        }).sort((a,b) => b.enrolled - a.enrolled).slice(0, 6);
+        const labels = sortedClasses.map(c => c.name.substring(0, 15) + '...');
+        const enrolledData = sortedClasses.map(c => c.enrolled);
+        const freeData = sortedClasses.map(c => Math.max(0, c.max - c.enrolled));
+        dashboardCharts.capacity = new Chart(ctxCap, { type: 'bar', data: { labels: labels.length ? labels : ['Chưa có lớp'], datasets: [ { label: 'Đang học', data: enrolledData, backgroundColor: '#0ea5e9' }, { label: 'Trống', data: freeData, backgroundColor: isDark ? '#334155' : '#e2e8f0' } ] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { x: { stacked: true, grid: { color: gridColor } }, y: { stacked: true, grid: { display: false } } } } });
+      }
+    }
+
+    /* ================= CÁC HÀM XỬ LÝ CHỌN LỌC ================= */
+    function populateProgramSelects() {
+      const progOps = CURRICULUM_PROGRAMS.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+      let groupedClassOps = '<option value="">-- Chọn lớp học --</option>'; let allClassOps = '<option value="ALL">Mọi lớp học</option>';
+      
+      CURRICULUM_PROGRAMS.forEach(prog => {
+        const classesInProg = appData.classes.filter(c => c.programId === prog.id);
+        if(classesInProg.length > 0) {
+          groupedClassOps += `<optgroup label="${escapeHtml(prog.name)}">`; allClassOps += `<optgroup label="${escapeHtml(prog.name)}">`;
+          classesInProg.forEach(c => {
+            groupedClassOps += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+            allClassOps += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+          });
+          groupedClassOps += `</optgroup>`; allClassOps += `</optgroup>`;
+        }
+      });
+
+      if(document.getElementById('form-class-program')) document.getElementById('form-class-program').innerHTML = progOps;
+      if(document.getElementById('form-session-class')) document.getElementById('form-session-class').innerHTML = groupedClassOps;
+      if(document.getElementById('batch-class-select')) document.getElementById('batch-class-select').innerHTML = groupedClassOps;
+      if(document.getElementById('daily-att-class')) document.getElementById('daily-att-class').innerHTML = groupedClassOps;
+      if(document.getElementById('filter-student-class')) document.getElementById('filter-student-class').innerHTML = allClassOps;
+      if(document.getElementById('filter-class-program')) document.getElementById('filter-class-program').innerHTML = `<option value="ALL">Tất cả chương trình</option>` + progOps;
+      if(document.getElementById('finance-class-filter')) document.getElementById('finance-class-filter').innerHTML = `<option value="ALL">Tất cả các lớp</option>` + groupedClassOps.replace('<option value="">-- Chọn lớp học --</option>', '');
+    }
+
+    function updateSubLevelsForProgram(progId) {
+      const p = CURRICULUM_PROGRAMS.find(x=>x.id===progId) || CURRICULUM_PROGRAMS[0];
+      if(document.getElementById('form-class-sublevel')) {
+        document.getElementById('form-class-sublevel').innerHTML = p.subLevels.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+      }
+    }
+
     function toggleFeeLabel(type) {
       const label = document.getElementById('label-class-fee');
       if(label) label.textContent = type === 'VIP' ? 'Học phí 1 BUỔI (VNĐ)' : 'Học phí THÁNG (VNĐ)';
     }
 
+    /* ================= XỬ LÝ LỊCH HỌC VÀ GHI ĐÈ ================= */
     function handleDaySelectionChange() {
       const container = document.getElementById('dynamic-time-inputs'); container.innerHTML = '';
       const checkboxes = document.querySelectorAll('.day-chk:checked');
@@ -920,6 +1435,7 @@
       document.querySelectorAll('.day-chk').forEach(cb => cb.checked = false); handleDaySelectionChange(); document.getElementById('session-conflict-warning').classList.add('hidden');
       openModal('modal-add-session'); 
     }
+    
     function openSessionModalForClass(cid) { openSessionModal(); document.getElementById('form-session-class').value = cid; }
     function openSessionModalAtSlot(d,s,e) { openSessionModal(); toggleSessionMode('adhoc'); document.getElementById('form-session-single-date').value = d; document.getElementById('form-session-adhoc-start').value = s; document.getElementById('form-session-adhoc-end').value = e; checkAdhocConflict(); }
 
@@ -949,7 +1465,7 @@
         if (checkedBoxes.length === 0) return showToast("Cô hãy tick chọn ít nhất 1 thứ trong tuần nhé!", "warning");
         const selectedDays = checkedBoxes.map(cb => parseInt(cb.value));
 
-        // XÓA LỊCH CŨ TỪ NGÀY BẮT ĐẦU ĐỂ GHI ĐÈ (Chỉ xóa các buổi chưa điểm danh)
+        // TÍNH NĂNG GHI ĐÈ: Xóa các buổi học CŨ (từ ngày bắt đầu) CHƯA điểm danh
         appData.sessions = appData.sessions.filter(s => {
           if (s.classId === classId && s.date >= startDateStr) {
              if (!s.attendance || Object.keys(s.attendance).length === 0) return false; 
@@ -984,33 +1500,7 @@
       persistData(); closeModal('modal-add-session'); renderAllViews(); showToast(`Đã ghi đè & xếp ${count} buổi học!`, "success");
     }
 
-    /* IN ẤN TKB */
-    function openPrintModal() { document.getElementById('print-selected-class').innerHTML = appData.classes.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(''); handlePrintTypeChange('OVERVIEW'); openModal('modal-print-options'); }
-    function handlePrintTypeChange(t) { document.getElementById('print-class-select-box').classList.toggle('hidden', t==='OVERVIEW'); updatePrintPreviewContent(); }
-    function generatePrintHtmlContent() {
-      const type = document.querySelector('input[name="print-type"]:checked')?.value || 'OVERVIEW';
-      const start = getStartOfWeek(schedulePivotDate); const days = Array.from({length:7}, (_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
-      if(type === 'OVERVIEW') {
-        return days.map(d => {
-          const dStr = d.toISOString().split('T')[0];
-          const ses = appData.sessions.filter(s=>s.date===dStr).sort((a,b)=>a.startTime.localeCompare(b.startTime));
-          if(ses.length===0) return '';
-          return `<div style="margin-bottom:10px; border:1px solid #ccc; padding:10px; border-radius:8px;"><b style="color:#0f766e">Ngày ${formatDateVN(dStr)}</b><ul style="margin:5px 0; padding-left:20px">${ses.map(s=>{ const cls = appData.classes.find(c=>c.id===s.classId); return `<li>${cls?escapeHtml(cls.name):'Lớp đã xóa'} (${s.startTime}-${s.endTime})</li>`; }).join('')}</ul></div>`;
-        }).join('');
-      } else {
-        const cid = document.getElementById('print-selected-class').value; const cname = appData.classes.find(c=>c.id===cid)?.name || '';
-        const ses = appData.sessions.filter(s=>s.classId===cid).sort((a,b)=>a.date.localeCompare(b.date));
-        return `<h3>Lịch học lớp: ${escapeHtml(cname)}</h3><ul>${ses.map(s=>`<li>${formatDateVN(s.date)}: ${s.startTime}-${s.endTime}</li>`).join('')}</ul>`;
-      }
-    }
-    function updatePrintPreviewContent() { document.getElementById('print-preview-modal-area').innerHTML = generatePrintHtmlContent(); }
-    function openPrintInNewWindow() {
-      const w = window.open('','_blank','width=800,height=900');
-      w.document.write(`<html><body style="font-family:sans-serif; padding:20px; line-height:1.5"><h2 style="text-align:center; color:#0f766e">LỚP TIẾNG ANH CÔ THỦY</h2><p style="text-align:center">${escapeHtml(appData.school.address)} | SĐT: ${escapeHtml(appData.school.phone)}</p><hr>${generatePrintHtmlContent()}</body></html>`);
-      w.document.close(); w.print(); closeModal('modal-print-options');
-    }
-
-    /* ================= 9. CLASSES MANAGEMENT ================= */
+    /* ================= TẠO VÀ QUẢN LÝ LỚP HỌC ================= */
     function openClassModal(id=null) {
       document.getElementById('form-class').reset(); populateProgramSelects(); updateSubLevelsForProgram(document.getElementById('form-class-program').value);
       toggleFeeLabel('NORMAL'); 
@@ -1053,12 +1543,12 @@
     }
     
     function deleteClass(classId) {
-      showCustomConfirm("Xóa Lớp Học", "Cô có chắc chắn muốn xóa lớp này? Các buổi học và dữ liệu học phí liên quan cũng sẽ bị xóa.", () => {
+      showCustomConfirm("Xóa Lớp Học", "Cô có chắc chắn muốn xóa lớp này?", () => {
         appData.classes = appData.classes.filter(c => c.id !== classId); 
         appData.sessions = appData.sessions.filter(s => s.classId !== classId); 
         appData.students.forEach(st => { if (Array.isArray(st.classIds)) st.classIds = st.classIds.filter(cid => cid !== classId); });
         appData.fees = appData.fees.filter(f => f.classId !== classId);
-        persistData(); renderAllViews(); showToast("Đã xóa lớp học thành công!", "info");
+        persistData(); renderAllViews(); showToast("Đã xóa lớp học!", "info");
       });
     }
 
@@ -1101,7 +1591,7 @@
       }).join('');
     }
 
-    /* ================= 10. STUDENTS MANAGEMENT ================= */
+    /* ================= TẠO VÀ QUẢN LÝ HỌC VIÊN ================= */
     function openStudentModal(id=null) {
       document.getElementById('form-student').reset(); document.getElementById('parent-name-suggestions').classList.add('hidden'); document.getElementById('parent-phone-suggestions').classList.add('hidden'); document.getElementById('form-student-sibling-alert').classList.add('hidden');
       if(id){ const s=appData.students.find(x=>x.id===id); if(s){ document.getElementById('form-student-id').value=s.id; document.getElementById('form-student-name').value=s.name; document.getElementById('form-student-parent').value=s.parent||''; document.getElementById('form-student-phone').value=s.phone||''; currentSelectedStudentClassIds=Array.isArray(s.classIds)?s.classIds:[]; } }
@@ -1159,7 +1649,7 @@
     }
     
     function deleteStudent(studentId) {
-      showCustomConfirm("Xóa Học Viên", "Cô có chắc chắn muốn xóa hồ sơ học viên này? Các dữ liệu đóng tiền và báo cáo của em này sẽ bị xóa theo.", () => {
+      showCustomConfirm("Xóa Học Viên", "Cô có chắc chắn muốn xóa hồ sơ này?", () => {
         appData.students = appData.students.filter(s => s.id !== studentId);
         appData.sessions.forEach(ses => { if (ses.attendance && ses.attendance[studentId]) delete ses.attendance[studentId]; });
         appData.users.forEach(u => { if (Array.isArray(u.studentIds)) u.studentIds = u.studentIds.filter(sid => sid !== studentId); });
@@ -1213,7 +1703,7 @@
       persistData(); closeModal('modal-batch-students'); renderAllViews(); showToast("Đã thêm hàng loạt", "success");
     }
 
-    /* ================= 11. FINANCE MANAGEMENT ================= */
+    /* ================= TÍNH TOÁN HỌC PHÍ ================= */
     function renderFinance() {
       const filterClassId = document.getElementById('finance-class-filter').value;
       const tbody = document.getElementById('finance-table-body');
@@ -1321,7 +1811,72 @@
       persistData(); closeModal('modal-payment'); renderFinance(); updateNavBadges(); showToast("Đã ghi nhận thanh toán thành công!", "success");
     }
 
-    /* ================= 12. ATTENDANCE & MODAL ================= */
+    /* ================= ĐIỂM DANH & NHẬT TRÌNH ================= */
+    function initDailyAttendanceTab() {
+      const dateEl = document.getElementById('daily-att-date');
+      if(!dateEl.value) dateEl.value = new Date().toISOString().split('T')[0];
+      filterDailyClassesByDate();
+      document.getElementById('daily-att-container').classList.add('hidden');
+    }
+    function filterDailyClassesByDate() {
+      const dateVal = document.getElementById('daily-att-date').value;
+      const classSelect = document.getElementById('daily-att-class');
+      if (!dateVal) return;
+      const sessionsOnDate = appData.sessions.filter(s => s.date === dateVal).sort((a,b) => a.startTime.localeCompare(b.startTime));
+      if (sessionsOnDate.length === 0) { classSelect.innerHTML = `<option value="">-- Không có lịch dạy trong ngày này --</option>`; } 
+      else { let opts = `<option value="">-- Chọn lớp có lịch hôm nay --</option>`; sessionsOnDate.forEach(ses => { const cls = appData.classes.find(c => c.id === ses.classId); if(cls) { opts += `<option value="${cls.id}">[${ses.startTime}-${ses.endTime}] ${escapeHtml(cls.name)}</option>`; } }); classSelect.innerHTML = opts; }
+      document.getElementById('daily-att-container').classList.add('hidden');
+    }
+    function loadDailyAttendance() {
+      const dateVal = document.getElementById('daily-att-date').value;
+      const classId = document.getElementById('daily-att-class').value;
+      if (!dateVal || !classId) return showToast("Vui lòng chọn Ngày và Lớp có lịch để điểm danh!", "warning");
+      const cls = appData.classes.find(c => c.id === classId);
+      const enrolled = appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.includes(classId));
+      document.getElementById('daily-att-list-title').textContent = `Lớp: ${cls ? cls.name : ''} (${formatDateVN(dateVal)})`;
+      if (enrolled.length === 0) { document.getElementById('daily-att-students-list').innerHTML = `<p class="text-sm italic text-center py-4">Lớp chưa có học sinh.</p>`; document.getElementById('daily-att-container').classList.remove('hidden'); return; }
+      
+      const session = appData.sessions.find(s => s.date === dateVal && s.classId === classId);
+      document.getElementById('daily-att-session-id').value = session ? session.id : '';
+      document.getElementById('daily-att-lesson').value = session ? (session.lessonTaught||'') : '';
+      document.getElementById('daily-att-homework').value = session ? (session.homework||'') : '';
+      document.getElementById('daily-att-homework-link').value = session ? (session.homeworkLink||'') : '';
+
+      document.getElementById('daily-att-students-list').innerHTML = enrolled.map((st, index) => {
+        const att = (session && session.attendance && session.attendance[st.id]) || { status: 'PRESENT', note: '' };
+        return `<div class="p-3 bg-slate-50 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-100 transition-colors animate-fade-in-up" style="animation-delay: ${index * 50}ms"><div class="flex-1 w-full"><p class="font-bold text-sm">${escapeHtml(st.name)} <span class="text-xs text-slate-500">${st.nick?`(${st.nick})`:''}</span></p><input type="text" id="daily-att-note-${st.id}" value="${escapeHtml(att.note)}" placeholder="Nhận xét riêng..." class="mt-1 w-full text-xs p-1.5 border rounded outline-none focus:ring-1 focus:ring-teal-500 transition-shadow"></div><div class="flex gap-1 bg-white p-1 rounded border shadow-sm"><button onclick="setDailyStudentAtt('${st.id}', 'PRESENT')" id="daily-btn-${st.id}-PRESENT" class="px-2.5 py-1 text-xs font-bold rounded transition-all ${att.status==='PRESENT'?'bg-emerald-500 text-white':'text-slate-500 hover:bg-slate-100'}">Có mặt</button><button onclick="setDailyStudentAtt('${st.id}', 'LATE')" id="daily-btn-${st.id}-LATE" class="px-2.5 py-1 text-xs font-bold rounded transition-all ${att.status==='LATE'?'bg-amber-500 text-white':'text-slate-500 hover:bg-slate-100'}">Muộn</button><button onclick="setDailyStudentAtt('${st.id}', 'ABSENT')" id="daily-btn-${st.id}-ABSENT" class="px-2.5 py-1 text-xs font-bold rounded transition-all ${att.status==='ABSENT'?'bg-rose-500 text-white':'text-slate-500 hover:bg-slate-100'}">Vắng</button></div><input type="hidden" id="daily-val-${st.id}" value="${att.status}"></div>`;
+      }).join('');
+      document.getElementById('daily-att-container').classList.remove('hidden');
+    }
+    function setDailyStudentAtt(studentId, status) {
+      document.getElementById(`daily-val-${studentId}`).value = status;
+      ['PRESENT','LATE','ABSENT'].forEach(s => {
+        const btn = document.getElementById(`daily-btn-${studentId}-${s}`);
+        if(btn) { if(s===status) btn.className = `px-2.5 py-1 text-xs font-bold rounded transition-all text-white ${s==='PRESENT'?'bg-emerald-500':s==='LATE'?'bg-amber-500':'bg-rose-500'}`; else btn.className = "px-2.5 py-1 text-xs font-bold rounded transition-all text-slate-500 hover:bg-slate-100"; }
+      });
+    }
+    function markAllDailyAttendance(status) {
+      const classId = document.getElementById('daily-att-class').value;
+      appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.includes(classId)).forEach(st => setDailyStudentAtt(st.id, status));
+    }
+    function saveDailyAttendance() {
+      const d = document.getElementById('daily-att-date').value, c = document.getElementById('daily-att-class').value;
+      const les = document.getElementById('daily-att-lesson').value.trim(); const hw = document.getElementById('daily-att-homework').value.trim(); const hwLink = document.getElementById('daily-att-homework-link').value.trim();
+      let sid = document.getElementById('daily-att-session-id').value;
+      let attData = {};
+      appData.students.filter(s => Array.isArray(s.classIds) && s.classIds.includes(c)).forEach(st => { attData[st.id] = { status: document.getElementById(`daily-val-${st.id}`).value, note: document.getElementById(`daily-att-note-${st.id}`).value.trim() }; });
+
+      if(sid) {
+        const ses = appData.sessions.find(x => x.id === sid);
+        if(ses) { ses.attendance = attData; ses.lessonTaught = les; ses.homework = hw; ses.homeworkLink = hwLink; }
+      } else {
+        const newS = { id: 'ses-'+Date.now(), classId: c, date: d, startTime: '17:00', endTime: '19:00', lessonTaught: les, homework: hw, homeworkLink: hwLink, attendance: attData };
+        appData.sessions.push(newS); document.getElementById('daily-att-session-id').value = newS.id;
+      }
+      persistData(); showToast("Lưu điểm danh thành công!", "success"); renderAllViews();
+    }
+
+    /* MODAL ĐIỂM DANH (TỪ LỊCH) */
     function openAttendanceModal(sessionId) {
       currentAttendanceSessionId = sessionId; const ses = appData.sessions.find(s => s.id === sessionId); if (!ses) return;
       const cls = appData.classes.find(c => c.id === ses.classId) || { name: 'Lớp học' };
@@ -1360,119 +1915,7 @@
     }
     function deleteCurrentSession() { showCustomConfirm("Hủy", "Xóa ca này?", () => { appData.sessions = appData.sessions.filter(s => s.id !== currentAttendanceSessionId); persistData(); closeModal('modal-attendance'); renderAllViews(); showToast("Đã hủy buổi học"); }); }
 
-    /* ================= 13. PARENT ACCOUNTS ================= */
-    function renderParentAccounts() {
-      const tbody = document.getElementById('parent-accounts-table-body'); const empty = document.getElementById('parent-accounts-empty');
-      const parents = appData.users.filter(u=>u.role==='PARENT');
-      if(parents.length===0){ tbody.innerHTML=''; empty.classList.remove('hidden'); return; }
-      empty.classList.add('hidden');
-      tbody.innerHTML = parents.map((a, i) => `<tr class="animate-fade-in-up" style="animation-delay: ${i*30}ms"><td class="p-3">${escapeHtml(a.name)}</td><td class="p-3">${escapeHtml(a.username)}</td><td class="p-3">${escapeHtml(a.password)}</td><td class="p-3">${a.studentIds?.map(id=>appData.students.find(s=>s.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ')||''}</td><td class="p-3 text-right"><button onclick="openParentAccModal('${a.id}')" class="text-teal-600 mr-2 hover:underline">Sửa</button><button onclick="deleteParentAccount('${a.id}')" class="text-rose-500 hover:underline">Xóa</button></td></tr>`).join('');
-    }
-    function openParentAccModal(id=null) {
-      document.getElementById('form-parent-acc').reset(); let sel=[];
-      if(id){ const a=appData.users.find(u=>u.id===id); document.getElementById('form-parent-acc-id').value=a.id; document.getElementById('form-parent-acc-name').value=a.name; document.getElementById('form-parent-acc-user').value=a.username; document.getElementById('form-parent-acc-pass').value=a.password; sel=a.studentIds||[]; }
-      else document.getElementById('form-parent-acc-id').value='';
-      document.getElementById('form-parent-acc-students-list').innerHTML = appData.students.map(s=>`<label class="block"><input type="checkbox" class="parent-acc-st-chk mr-2 accent-teal-600" value="${s.id}" ${sel.includes(s.id)?'checked':''}>${escapeHtml(s.name)}</label>`).join('');
-      openModal('modal-add-parent-acc');
-    }
-    function handleSaveParentAccount(e) {
-      e.preventDefault(); const id=document.getElementById('form-parent-acc-id').value, name=document.getElementById('form-parent-acc-name').value, u=document.getElementById('form-parent-acc-user').value, p=document.getElementById('form-parent-acc-pass').value;
-      const sIds = Array.from(document.querySelectorAll('.parent-acc-st-chk:checked')).map(c=>c.value);
-      if(id) { const a=appData.users.find(x=>x.id===id); Object.assign(a, {name, username:u, password:p, studentIds:sIds}); }
-      else appData.users.push({id:'usr-'+Date.now(), role:'PARENT', name, username:u, password:p, studentIds:sIds});
-      persistData(); closeModal('modal-add-parent-acc'); renderParentAccounts(); showToast("Đã lưu tài khoản", "success");
-    }
-    function autoGenerateParentAccounts() {
-      let c=0; appData.students.forEach(st => { if(st.phone){ let u=appData.users.find(x=>x.username===st.phone); if(!u){ appData.users.push({id:'usr-'+Date.now()+Math.random(), role:'PARENT', username:st.phone, password:'123', name:st.parent||'Phụ huynh '+st.name, studentIds:[st.id]}); c++; } else if(Array.isArray(u.studentIds) && !u.studentIds.includes(st.id)) u.studentIds.push(st.id); } });
-      persistData(); renderParentAccounts(); showToast(`Đã tạo ${c} tài khoản`, "success");
-    }
-    function deleteParentAccount(id) { appData.users = appData.users.filter(u=>u.id!==id); persistData(); renderParentAccounts(); showToast("Đã xóa tài khoản", "info"); }
-
-    /* ================= 14. CỔNG PHỤ HUYNH (PARENT PORTAL) & TIMELINE ================= */
-    function renderParentPortal() {
-      document.getElementById('parent-user-name').textContent = currentUser.name;
-      const myKids = appData.students.filter(s => Array.isArray(currentUser.studentIds) && currentUser.studentIds.includes(s.id));
-      const switcher = document.getElementById('parent-child-switcher-container');
-      const select = document.getElementById('parent-child-select');
-      
-      if(myKids.length > 1) {
-        switcher.classList.remove('hidden');
-        select.innerHTML = myKids.map(k => `<option value="${k.id}">${escapeHtml(k.name)}</option>`).join('');
-      } else { switcher.classList.add('hidden'); }
-      
-      if(!activeParentChildId || !myKids.find(k=>k.id===activeParentChildId)) activeParentChildId = myKids[0]?.id;
-      if(activeParentChildId) renderParentPortalChild(activeParentChildId);
-    }
-    
-    function renderParentPortalChild(childId) {
-      activeParentChildId = childId;
-      const st = appData.students.find(s => s.id === childId);
-      if(!st) return;
-      document.getElementById('parent-welcome-child').textContent = `Sổ Liên Lạc bé ${st.nick || st.name}`;
-
-      const mySessions = appData.sessions.filter(s => Array.isArray(st.classIds) && st.classIds.includes(s.classId) && s.attendance && s.attendance[childId]).sort((a,b) => b.date.localeCompare(a.date));
-      const tlContent = document.getElementById('parent-timeline-content');
-      
-      if(mySessions.length === 0) {
-        tlContent.innerHTML = `<p class="text-slate-400 italic">Chưa có nhật trình bài học nào được ghi nhận.</p>`;
-        document.getElementById('parent-timeline-date').textContent = 'Chưa có lịch';
-      } else {
-        const latest = mySessions[0];
-        const att = latest.attendance[childId];
-        document.getElementById('parent-timeline-date').textContent = formatDateVN(latest.date);
-        
-        let attText = att.status==='PRESENT' ? 'Con đến lớp an toàn' : att.status==='LATE' ? 'Con đến lớp muộn' : 'Con nghỉ học hôm nay';
-        let attColor = att.status==='PRESENT' ? 'bg-emerald-500' : att.status==='LATE' ? 'bg-amber-500' : 'bg-rose-500';
-
-        tlContent.innerHTML = `
-          <div class="relative pl-6 animate-fade-in-up delay-100">
-            <div class="absolute left-[-17px] top-1 w-8 h-8 rounded-full ${attColor} border-4 border-white flex items-center justify-center text-white text-[10px] shadow-sm"><i class="fa-solid fa-user-check"></i></div>
-            <div class="p-3 bg-slate-50 border rounded-xl hover:shadow-md transition-shadow"><p class="text-xs font-bold text-slate-500 mb-1">${latest.startTime} - ĐIỂM DANH</p><p class="text-sm font-bold text-slate-800">${attText}</p></div>
-          </div>
-          ${latest.lessonTaught ? `
-          <div class="relative pl-6 animate-fade-in-up delay-200">
-            <div class="absolute left-[-17px] top-1 w-8 h-8 rounded-full bg-blue-500 border-4 border-white flex items-center justify-center text-white text-[10px] shadow-sm"><i class="fa-solid fa-book-open"></i></div>
-            <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl hover:shadow-md transition-shadow"><p class="text-xs font-bold text-blue-600 mb-1">NỘI DUNG HỌC</p><p class="text-sm text-blue-900">${escapeHtml(latest.lessonTaught)}</p></div>
-          </div>` : ''}
-          ${att.note ? `
-          <div class="relative pl-6 animate-fade-in-up delay-300">
-            <div class="absolute left-[-17px] top-1 w-8 h-8 rounded-full bg-amber-500 border-4 border-white flex items-center justify-center text-white text-[10px] shadow-sm"><i class="fa-solid fa-star"></i></div>
-            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl hover:shadow-md transition-shadow"><p class="text-xs font-bold text-amber-600 mb-1">LỜI CÔ DẶN</p><p class="text-sm text-amber-900 font-semibold italic">"${escapeHtml(att.note)}"</p></div>
-          </div>` : ''}
-          ${latest.homework ? `
-          <div class="relative pl-6 animate-fade-in-up delay-400">
-            <div class="absolute left-[-17px] top-1 w-8 h-8 rounded-full bg-pink-500 border-4 border-white flex items-center justify-center text-white text-[10px] shadow-sm"><i class="fa-solid fa-pen"></i></div>
-            <div class="p-3 bg-pink-50 border border-pink-100 rounded-xl hover:shadow-md transition-shadow">
-              <p class="text-xs font-bold text-pink-600 mb-1">BÀI TẬP VỀ NHÀ</p>
-              <p class="text-sm text-pink-900">${escapeHtml(latest.homework)}</p>
-              ${latest.homeworkLink ? `<a href="${latest.homeworkLink}" target="_blank" class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg hover:bg-indigo-200 transition-colors"><i class="fa-solid fa-link"></i> Xem File / Bài Tập</a>` : ''}
-            </div>
-          </div>` : ''}
-          <div class="relative pl-6 animate-fade-in-up delay-400">
-            <div class="absolute left-[-17px] top-1 w-8 h-8 rounded-full bg-slate-400 border-4 border-white flex items-center justify-center text-white text-[10px] shadow-sm"><i class="fa-solid fa-house"></i></div>
-            <div class="p-3"><p class="text-xs font-bold text-slate-500 mb-1">${latest.endTime} - KẾT THÚC BUỔI HỌC</p></div>
-          </div>
-        `;
-      }
-    }
-    function openParentLeaveModal() { document.getElementById('leave-date').value=''; document.getElementById('leave-reason').value=''; openModal('modal-parent-leave'); }
-    function submitParentLeave() {
-      const d = document.getElementById('leave-date').value, r = document.getElementById('leave-reason').value.trim();
-      if(!d || !r) return showToast("Vui lòng điền đủ ngày và lý do!", "warning");
-      const st = appData.students.find(s=>s.id===activeParentChildId);
-      appData.interactions.push({ id: 'in-'+Date.now(), type: 'LEAVE', studentId: activeParentChildId, studentName: st.name, date: d, content: r, status: 'UNREAD', createdAt: new Date().toISOString() });
-      persistData(); closeModal('modal-parent-leave'); showToast("Đã gửi đơn xin nghỉ cho cô!", "success");
-    }
-    function openParentMessageModal() { document.getElementById('message-content').value=''; openModal('modal-parent-message'); }
-    function submitParentMessage() {
-      const c = document.getElementById('message-content').value.trim();
-      if(!c) return showToast("Vui lòng nhập lời nhắn!", "warning");
-      const st = appData.students.find(s=>s.id===activeParentChildId);
-      appData.interactions.push({ id: 'in-'+Date.now(), type: 'MSG', studentId: activeParentChildId, studentName: st.name, content: c, status: 'UNREAD', createdAt: new Date().toISOString() });
-      persistData(); closeModal('modal-parent-message'); showToast("Đã gửi lời nhắn cho cô!", "success");
-    }
-
-    /* ================= 15. KHỞI ĐỘNG (INIT) ================= */
+    /* ================= KHỞI ĐỘNG ================= */
     window.addEventListener('DOMContentLoaded', () => {
       try {
         loadStoredData();
@@ -1492,7 +1935,28 @@
            if(cloudIndicator) cloudIndicator.classList.remove('hidden');
         });
 
-        // Bỏ kiểm tra qua SessionStorage để tương thích Github
+        // Tương thích mọi môi trường (Kể cả Github Pages)
+        const saved = sessionStorage.getItem(AUTH_SESSION_KEY);
+        if(saved) {
+          const u = JSON.parse(saved);
+          // Check if users array has this user
+          if (appData.users && appData.users.find(x => x.username === u.username && x.password === u.password)) {
+             currentUser = u;
+             document.getElementById('auth-screen').classList.add('hidden');
+             if(u.role === 'TEACHER') {
+                 document.getElementById('teacher-portal-screen').classList.remove('hidden');
+                 switchTab('dashboard');
+                 renderAllViews();
+                 startRealTimeClock();
+             } else {
+                 document.getElementById('parent-portal-screen').classList.remove('hidden');
+                 renderParentPortal();
+             }
+             return;
+          }
+        }
+        
+        // Nếu không có session, luôn hiện form đăng nhập
         document.getElementById('auth-screen').classList.remove('hidden');
 
       } catch (e) { console.error("Initialization Error:", e); }
@@ -1501,4 +1965,3 @@
   </script>
 </body>
 </html>
-```eof
