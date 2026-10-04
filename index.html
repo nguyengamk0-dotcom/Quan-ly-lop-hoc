@@ -49,7 +49,24 @@
     .delay-300 { animation-delay: 300ms; }
     .delay-400 { animation-delay: 400ms; }
     
+    /* Flow-style Animated Background */
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob { animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+    .animation-delay-2000 { animation-delay: 2s; }
+    .animation-delay-4000 { animation-delay: 4s; }
+    
     #main-content-view { transition: opacity 0.2s ease-in-out; }
+    
+    /* Modern Glass UI overrides */
+    .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .dark .glass-panel { background: rgba(30, 41, 59, 0.7); border-color: rgba(255,255,255,0.05); }
+    .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,0.04); }
+    .dark .glass-card { background: rgba(30, 41, 59, 0.85); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
   </style>
 
   <script type="module">
@@ -131,13 +148,20 @@
     };
   </script>
 </head>
-<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col antialiased font-sans">
+<body class="h-full bg-slate-50/50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 flex flex-col antialiased font-sans relative overflow-hidden">
+  
+  <!-- Flow-style Animated Background -->
+  <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+    <div class="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] rounded-full bg-teal-400/20 dark:bg-teal-600/20 blur-[100px] animate-blob mix-blend-multiply dark:mix-blend-lighten"></div>
+    <div class="absolute top-[20%] -right-[10%] w-[600px] h-[600px] rounded-full bg-emerald-400/20 dark:bg-emerald-600/20 blur-[120px] animate-blob animation-delay-2000 mix-blend-multiply dark:mix-blend-lighten"></div>
+    <div class="absolute -bottom-[20%] left-[20%] w-[700px] h-[700px] rounded-full bg-blue-400/20 dark:bg-blue-600/20 blur-[120px] animate-blob animation-delay-4000 mix-blend-multiply dark:mix-blend-lighten"></div>
+  </div>
 
   <!-- ======================================================== -->
   <!-- 1. MÀN HÌNH ĐĂNG NHẬP                                     -->
   <!-- ======================================================== -->
-  <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-700 max-w-md w-full p-6 sm:p-8 space-y-6 animate-fade-in-up">
+  <div id="auth-screen" class="fixed inset-0 z-50 glass-panel flex items-center justify-center p-4 overflow-y-auto">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden shadow-2xl border border-slate-200/80 dark:border-slate-700 max-w-md w-full p-6 sm:p-8 space-y-6 animate-fade-in-up">
       <div class="text-center space-y-2">
         <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-400 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-teal-600/30 mx-auto transition-transform hover:scale-110 duration-300">
           <i class="fa-solid fa-graduation-cap"></i>
@@ -220,7 +244,7 @@
     </header>
 
     <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
-      <div class="bg-gradient-to-r from-teal-600 via-teal-700 to-emerald-700 rounded-3xl p-5 sm:p-6 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in-up">
+      <div class="bg-gradient-to-br from-teal-500/90 to-emerald-600/90 backdrop-blur-xl border border-white/20 rounded-3xl p-5 sm:p-6 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in-up">
         <div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-xs mb-2"><i class="fa-solid fa-heart text-pink-300 animate-pulse"></i> Đồng hành cùng con mỗi ngày</span>
           <h2 class="text-xl sm:text-2xl font-bold tracking-tight" id="parent-welcome-child">Chào Quý Phụ huynh!</h2>
@@ -232,15 +256,15 @@
       </div>
 
       <div class="grid grid-cols-3 md:grid-cols-6 gap-3 animate-fade-in-up delay-100">
-        <button onclick="showToast('Tính năng Chuyên cần tổng hợp đang nâng cấp', 'info')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 text-blue-700 dark:text-blue-400 hover:bg-blue-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-calendar-check"></i></div><span class="text-[10px] font-bold text-center">Chuyên cần</span></button>
-        <button onclick="showToast('Tính năng Bảng Điểm đang nâng cấp', 'info')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-400 hover:bg-amber-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-star"></i></div><span class="text-[10px] font-bold text-center">Bảng điểm</span></button>
+        <button onclick="showParentFeature('ATTENDANCE')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 text-blue-700 dark:text-blue-400 hover:bg-blue-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-calendar-check"></i></div><span class="text-[10px] font-bold text-center">Chuyên cần</span></button>
+        <button onclick="showParentFeature('GRADES')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-400 hover:bg-amber-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-star"></i></div><span class="text-[10px] font-bold text-center">Bảng điểm</span></button>
         <button onclick="openParentMessageModal()" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-100 dark:border-pink-900 text-pink-700 dark:text-pink-400 hover:bg-pink-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-comment-dots"></i></div><span class="text-[10px] font-bold text-center">Lời nhắn cô</span></button>
         <button onclick="openParentLeaveModal()" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900 text-purple-700 dark:text-purple-400 hover:bg-purple-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-signature"></i></div><span class="text-[10px] font-bold text-center">Xin phép nghỉ</span></button>
-        <button onclick="showToast('Tính năng Bài Tập đang nâng cấp', 'info')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-book-open"></i></div><span class="text-[10px] font-bold text-center">Bài tập VN</span></button>
-        <button onclick="showToast('Tính năng Học Phí đang nâng cấp', 'info')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar"></i></div><span class="text-[10px] font-bold text-center">Học phí</span></button>
+        <button onclick="showParentFeature('HOMEWORK')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-book-open"></i></div><span class="text-[10px] font-bold text-center">Bài tập VN</span></button>
+        <button onclick="showParentFeature('TUITION')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 hover:-translate-y-1 hover:shadow-md transition-all duration-300"><div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center text-lg mb-2 shadow-sm group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar"></i></div><span class="text-[10px] font-bold text-center">Học phí</span></button>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm animate-fade-in-up delay-200">
+      <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm animate-fade-in-up delay-200">
         <div class="flex items-center justify-between mb-6">
           <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-timeline text-teal-600"></i> Nhật trình buổi học gần nhất</h3>
           <span class="text-xs font-semibold text-slate-500 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full" id="parent-timeline-date">...</span>
@@ -267,7 +291,7 @@
   <!-- 3. CỔNG QUẢN TRỊ GIÁO VIÊN                               -->
   <!-- ======================================================== -->
   <div id="teacher-portal-screen" class="hidden flex-1 flex flex-col md:flex-row h-full min-h-screen overflow-hidden">
-    <aside class="hidden md:flex flex-col w-64 lg:w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-4 shrink-0 transition-colors z-10">
+    <aside class="hidden md:flex flex-col w-64 lg:w-72 glass-panel border-r border-slate-200/50 dark:border-slate-700/50 p-4 shrink-0 transition-colors z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
       <div class="flex items-center gap-3 px-2 py-3 border-b border-slate-100 dark:border-slate-700/80 mb-4">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-400 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-teal-500/20 transition-transform hover:rotate-6 duration-300"><i class="fa-solid fa-graduation-cap"></i></div>
         <div class="overflow-hidden">
@@ -283,11 +307,13 @@
       <nav class="flex-1 space-y-1.5 overflow-y-auto pr-1" id="desktop-nav">
         <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-chart-pie text-lg w-5 text-center text-teal-600 dark:text-teal-400"></i><span>Tổng quan</span></button>
         <button onclick="switchTab('schedule')" data-tab="schedule" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-calendar-days text-lg w-5 text-center text-blue-500"></i><span>Thời khóa biểu</span></button>
-        <button onclick="switchTab('daily-attendance')" data-tab="daily-attendance" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-clipboard-user text-lg w-5 text-center text-pink-500"></i><span>Điểm danh ngày</span></button>
-        <button onclick="switchTab('classes')" data-tab="classes" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-chalkboard-user text-lg w-5 text-center text-emerald-500"></i><span>Lớp học</span><span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold" id="badge-class-count">0</span></button>
-        <button onclick="switchTab('students')" data-tab="students" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-user-graduate text-lg w-5 text-center text-purple-500"></i><span>Học viên & Gia đình</span><span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold" id="badge-student-count">0</span></button>
+        
+        <div class="mt-4 mb-1 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quản lý Đào tạo</div>
+        <button onclick="switchTab('classes')" data-tab="classes" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-chalkboard-user text-lg w-5 text-center text-emerald-500"></i><span>Quản lý Lớp học</span><span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold" id="badge-class-count">0</span></button>
+        <button onclick="switchTab('students')" data-tab="students" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-user-graduate text-lg w-5 text-center text-purple-500"></i><span>Hồ sơ Học viên</span><span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold" id="badge-student-count">0</span></button>
+        
+        <div class="mt-4 mb-1 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hệ thống</div>
         <button onclick="switchTab('finance')" data-tab="finance" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-file-invoice-dollar text-lg w-5 text-center text-green-500"></i><span>Quản lý Học phí</span></button>
-        <button onclick="switchTab('parent-accounts')" data-tab="parent-accounts" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-users-gear text-lg w-5 text-center text-amber-500"></i><span>Tài khoản Phụ huynh</span><span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 font-semibold" id="badge-parent-acc-count">0</span></button>
         <button onclick="switchTab('settings')" data-tab="settings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-300 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:pl-5"><i class="fa-solid fa-sliders text-lg w-5 text-center text-slate-400"></i><span>Cài đặt & Dữ liệu</span></button>
       </nav>
       <div class="pt-3 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 space-y-1">
@@ -298,8 +324,8 @@
       </div>
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50/50 dark:bg-slate-900/50">
-      <header class="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 shadow-sm z-10">
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-transparent">
+      <header class="md:hidden flex items-center justify-between px-4 py-3 glass-panel border-b border-slate-200/50 dark:border-slate-700/50 shrink-0 shadow-sm z-10">
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shrink-0"><i class="fa-solid fa-graduation-cap"></i></div>
           <div class="truncate"><h2 class="font-bold text-sm text-teal-800 dark:text-teal-400 truncate" id="mobile-app-title">Lớp Học Cô Thủy</h2></div>
@@ -314,7 +340,7 @@
         
         <!-- DASHBOARD TAB -->
         <section id="tab-dashboard" class="space-y-6">
-          <div class="bg-gradient-to-r from-teal-600 via-teal-700 to-emerald-700 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in-up">
+          <div class="bg-gradient-to-br from-teal-500/90 to-emerald-600/90 backdrop-blur-xl border border-white/20 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in-up">
             <div class="flex-1 w-full text-center lg:text-left">
               <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-sm mb-2 shadow-sm"><i class="fa-regular fa-calendar-check text-amber-300"></i><span id="current-date-vn">Hôm nay</span></div>
               <h2 class="text-xl md:text-2xl font-bold tracking-tight">Chào Cô Thủy! Chúc cô một ngày dạy học tràn đầy năng lượng <i class="fa-solid fa-sun text-amber-300 animate-spin-slow"></i></h2>
@@ -341,14 +367,14 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up delay-200">
             <div class="lg:col-span-2 space-y-6">
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 hover:shadow-md transition-shadow">
+              <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span><h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Các buổi học hôm nay</h3></div>
                   <button onclick="switchTab('schedule')" class="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline">Xem cả tuần &rarr;</button>
                 </div>
                 <div id="dash-today-list" class="space-y-3"></div>
               </div>
-              <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+              <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2"><i class="fa-solid fa-layer-group text-teal-600"></i> 8 Chương trình đào tạo chuyên sâu</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dash-programs-grid"></div>
               </div>
@@ -367,25 +393,25 @@
           <div class="pt-6 border-t border-slate-200 dark:border-slate-700 animate-fade-in-up delay-300">
             <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i>Báo cáo & Thống kê Phân tích</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <div class="group bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="group glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-600 transition-colors">Tỷ lệ Học viên theo Chương trình</h3>
                 <div class="flex-1 min-h-[220px] relative flex items-center justify-center"><canvas id="chart-programs"></canvas></div>
               </div>
-              <div class="group bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="group glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-600 transition-colors">Tỷ lệ Trạng thái Học viên</h3>
                 <div class="flex-1 min-h-[220px] relative flex items-center justify-center"><canvas id="chart-status"></canvas></div>
               </div>
-              <div class="group bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="group glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-600 transition-colors">Xu hướng Hình thức Học</h3>
                 <div class="flex-1 min-h-[220px] relative flex items-center justify-center"><canvas id="chart-learning-mode"></canvas></div>
               </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
-              <div class="group bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="group glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-600 transition-colors">Xu hướng Chuyên cần (7 ngày qua)</h3>
                 <div class="flex-1 min-h-[250px] relative"><canvas id="chart-attendance"></canvas></div>
               </div>
-              <div class="group bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="group glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-600 transition-colors">Độ phủ Sĩ số Lớp học</h3>
                 <div class="flex-1 min-h-[250px] relative"><canvas id="chart-capacity"></canvas></div>
               </div>
@@ -395,7 +421,7 @@
 
         <!-- SCHEDULE TAB -->
         <section id="tab-schedule" class="hidden space-y-6">
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-4 md:p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
                 <button onclick="setScheduleView('week')" id="btn-view-week" class="px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all bg-white dark:bg-slate-800 shadow-sm text-teal-700 dark:text-teal-400">Xem Lịch Tuần</button>
@@ -414,16 +440,16 @@
             </div>
           </div>
 
-          <div id="schedule-week-container" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden overflow-x-auto">
+          <div id="schedule-week-container" class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden overflow-x-auto">
             <div class="grid grid-cols-7 min-w-[750px] border-b border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/40 text-center py-2.5 font-bold text-xs" id="week-header-row"></div>
             <div class="grid grid-cols-7 min-w-[750px] divide-x divide-slate-100 dark:divide-slate-700/80 min-h-[420px]" id="week-columns-container"></div>
           </div>
-          <div id="schedule-day-container" class="hidden bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
+          <div id="schedule-day-container" class="hidden glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
             <h3 class="font-bold text-base mb-4 text-slate-800 dark:text-slate-100" id="schedule-day-title">Danh sách buổi học</h3>
             <div id="schedule-day-list" class="space-y-3"></div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
               <div>
                 <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-table-cells text-teal-600"></i> Ma Trận Lịch Tuần Tổng Quan</h3>
@@ -437,7 +463,7 @@
             <div class="overflow-x-auto">
               <table class="w-full min-w-[780px] border-collapse text-xs border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden" id="matrix-timetable">
                 <thead>
-                  <tr class="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200">
+                  <tr class="glass-panel text-slate-700 dark:text-slate-200">
                     <th class="p-2.5 border border-slate-200 font-bold">Khung Giờ</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 2</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 3</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 4</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 5</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 6</th><th class="p-2.5 border border-slate-200 font-bold">Thứ 7</th><th class="p-2.5 border border-slate-200 font-bold">Chủ Nhật</th>
                   </tr>
                 </thead>
@@ -447,110 +473,139 @@
           </div>
         </section>
 
-        <!-- DAILY ATTENDANCE TAB -->
-        <section id="tab-daily-attendance" class="hidden space-y-6">
-          <div class="bg-gradient-to-r from-pink-600 to-rose-500 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in-up">
-            <div>
-              <h2 class="text-xl md:text-2xl font-bold tracking-tight"><i class="fa-solid fa-clipboard-user mr-2 text-pink-200"></i>Điểm Danh Hàng Ngày</h2>
-              <p class="text-pink-100 text-xs md:text-sm mt-1">Khi chọn ngày, hệ thống sẽ tự động hiển thị các lớp có lịch học để điểm danh nhanh chóng.</p>
-            </div>
-          </div>
-
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-end hover:shadow-md transition-shadow duration-300 animate-fade-in-up delay-100">
-             <div class="w-full md:w-auto">
-               <label class="block text-xs font-semibold text-slate-500 mb-1.5 transition-colors focus-within:text-teal-500">Ngày điểm danh</label>
-               <input type="date" id="daily-att-date" onchange="filterDailyClassesByDate()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-semibold outline-none focus:border-teal-500 transition-colors">
-             </div>
-             <div class="flex-1 w-full">
-               <label class="block text-xs font-semibold text-slate-500 mb-1.5 transition-colors focus-within:text-teal-500">Chọn Lớp học (Đã lọc theo ngày)</label>
-               <select id="daily-att-class" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-teal-700 outline-none focus:border-teal-500 transition-colors"></select>
-             </div>
-             <button onclick="loadDailyAttendance()" class="w-full md:w-auto px-5 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"><i class="fa-solid fa-magnifying-glass mr-1.5"></i> Lấy danh sách</button>
-          </div>
-
-          <div id="daily-att-container" class="hidden space-y-4 animate-fade-in-up">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
-              <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
-                <h3 class="font-bold text-base text-slate-800 dark:text-slate-100" id="daily-att-list-title">Danh sách học viên</h3>
-                <button onclick="markAllDailyAttendance('PRESENT')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 font-bold rounded-lg text-xs hover:bg-emerald-200 transition-colors hover:shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Có mặt cả lớp</button>
-              </div>
-              <div id="daily-att-students-list" class="space-y-2 mb-5"></div>
-              
-              <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700 text-xs md:text-sm bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
-                <div><label class="block font-bold text-teal-800 dark:text-teal-400 mb-1.5"><i class="fa-solid fa-book-open mr-1"></i>Nội dung bài học hôm nay</label><input type="text" id="daily-att-lesson" placeholder="Ví dụ: Luyện nói chủ đề Family, học từ vựng mới..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-teal-500 transition-colors"></div>
-                <div>
-                  <label class="block font-bold text-amber-600 mb-1.5"><i class="fa-solid fa-house mr-1"></i>Bài tập về nhà (Dặn dò)</label>
-                  <input type="text" id="daily-att-homework" placeholder="Ví dụ: Làm bài tập Workbook trang 12..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-amber-500 transition-colors">
-                </div>
-                <div>
-                  <label class="block font-bold text-indigo-600 mb-1.5"><i class="fa-solid fa-link mr-1"></i>Đính kèm link tài liệu / ảnh BTVN</label>
-                  <input type="url" id="daily-att-homework-link" placeholder="Dán link Google Drive hoặc link ảnh bài tập vào đây..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-indigo-500 transition-colors">
-                </div>
-                <input type="hidden" id="daily-att-session-id">
-              </div>
-
-              <div class="mt-5 flex justify-end"><button onclick="saveDailyAttendance()" class="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i> Lưu Kết Quả Điểm Danh</button></div>
-            </div>
-          </div>
-        </section>
-
         <!-- CLASSES TAB -->
         <section id="tab-classes" class="hidden space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Danh sách Lớp học</h2></div>
-            <div class="flex items-center gap-2">
-              <select id="filter-class-program" onchange="renderClasses()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none hover:shadow-sm transition-shadow"></select>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+            <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 hidden md:block">Quản lý Lớp học</h2>
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+               <button onclick="setClassesSubTab('list')" id="btn-classes-list" class="px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all">Danh sách Lớp học</button>
+               <button onclick="setClassesSubTab('att')" id="btn-classes-att" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">Điểm danh ngày</button>
             </div>
           </div>
-          <div id="classes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          
+          <div id="classes-list-view" class="space-y-6 animate-fade-in-up">
+            <div class="flex justify-end">
+              <select id="filter-class-program" onchange="renderClasses()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none hover:shadow-sm transition-shadow"></select>
+            </div>
+            <div id="classes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          </div>
+          
+          <div id="classes-att-view" class="hidden space-y-6 animate-fade-in-up">
+            <div class="bg-gradient-to-r from-pink-600 to-rose-500 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-xl md:text-2xl font-bold tracking-tight"><i class="fa-solid fa-clipboard-user mr-2 text-pink-200"></i>Điểm Danh Hàng Ngày</h2>
+                <p class="text-pink-100 text-xs md:text-sm mt-1">Khi chọn ngày, hệ thống sẽ tự động hiển thị các lớp có lịch học để điểm danh nhanh chóng.</p>
+              </div>
+            </div>
+            <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 items-end hover:shadow-md transition-shadow">
+               <div class="w-full md:w-auto">
+                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 transition-colors focus-within:text-teal-500">Ngày điểm danh</label>
+                 <input type="date" id="daily-att-date" onchange="filterDailyClassesByDate()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-semibold outline-none focus:border-teal-500 transition-colors">
+               </div>
+               <div class="flex-1 w-full">
+                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 transition-colors focus-within:text-teal-500">Chọn Lớp học (Đã lọc theo ngày)</label>
+                 <select id="daily-att-class" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-teal-700 outline-none focus:border-teal-500 transition-colors"></select>
+               </div>
+               <button onclick="loadDailyAttendance()" class="w-full md:w-auto px-5 py-2.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"><i class="fa-solid fa-magnifying-glass mr-1.5"></i> Lấy danh sách</button>
+            </div>
+            <div id="daily-att-container" class="hidden space-y-4">
+              <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
+                  <h3 class="font-bold text-base text-slate-800 dark:text-slate-100" id="daily-att-list-title">Danh sách học viên</h3>
+                  <button onclick="markAllDailyAttendance('PRESENT')" class="px-3 py-1.5 bg-emerald-100 text-emerald-700 font-bold rounded-lg text-xs hover:bg-emerald-200 transition-colors hover:shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Có mặt cả lớp</button>
+                </div>
+                <div id="daily-att-students-list" class="space-y-2 mb-5"></div>
+                <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700 text-xs md:text-sm bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl">
+                  <div><label class="block font-bold text-teal-800 dark:text-teal-400 mb-1.5"><i class="fa-solid fa-book-open mr-1"></i>Nội dung bài học hôm nay</label><input type="text" id="daily-att-lesson" placeholder="Ví dụ: Luyện nói chủ đề Family, học từ vựng mới..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-teal-500 transition-colors"></div>
+                  <div>
+                    <label class="block font-bold text-amber-600 mb-1.5"><i class="fa-solid fa-house mr-1"></i>Bài tập về nhà (Dặn dò)</label>
+                    <input type="text" id="daily-att-homework" placeholder="Ví dụ: Làm bài tập Workbook trang 12..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-amber-500 transition-colors">
+                  </div>
+                  <div>
+                    <label class="block font-bold text-indigo-600 mb-1.5"><i class="fa-solid fa-link mr-1"></i>Đính kèm link tài liệu / ảnh BTVN</label>
+                    <input type="url" id="daily-att-homework-link" placeholder="Dán link Google Drive hoặc link ảnh bài tập vào đây..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-indigo-500 transition-colors">
+                  </div>
+                  <input type="hidden" id="daily-att-session-id">
+                </div>
+                <div class="mt-5 flex justify-end"><button onclick="saveDailyAttendance()" class="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 text-sm"><i class="fa-solid fa-floppy-disk mr-1"></i> Lưu Kết Quả Điểm Danh</button></div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- STUDENTS TAB -->
-        <section id="tab-students" class="hidden space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Hồ sơ Học viên & Gia đình</h2></div>
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
-                <button type="button" onclick="setStudentViewMode('TABLE')" id="btn-view-st-table" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-xs flex items-center gap-1.5"><i class="fa-solid fa-list"></i> Danh sách</button>
-                <button type="button" onclick="setStudentViewMode('FAMILY')" id="btn-view-st-family" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-people-roof"></i> Gộp Gia đình</button>
+        <section id="tab-students" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+            <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 hidden md:block">QL Thông tin Phụ huynh & Học viên</h2>
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+               <button onclick="setStudentsSubTab('profile')" id="btn-students-profile" class="px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all">Hồ sơ Học viên & Gia đình</button>
+               <button onclick="setStudentsSubTab('parent')" id="btn-students-parent" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all">Tài khoản Phụ huynh</button>
+            </div>
+          </div>
+
+          <div id="students-profile-view" class="space-y-5 animate-fade-in-up">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
+                  <button type="button" onclick="setStudentViewMode('TABLE')" id="btn-view-st-table" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-400 shadow-xs flex items-center gap-1.5"><i class="fa-solid fa-list"></i> Danh sách</button>
+                  <button type="button" onclick="setStudentViewMode('FAMILY')" id="btn-view-st-family" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 dark:text-slate-300 flex items-center gap-1.5"><i class="fa-solid fa-people-roof"></i> Gộp Gia đình</button>
+                </div>
+                <button onclick="openModal('modal-batch-students')" class="px-3.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs flex items-center gap-2 transition-colors"><i class="fa-solid fa-paste"></i> Dán DS</button>
               </div>
-              <button onclick="openModal('modal-batch-students')" class="px-3.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs flex items-center gap-2 transition-colors"><i class="fa-solid fa-paste"></i> Dán DS</button>
+            </div>
+            <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-3 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-3 items-center hover:shadow-md transition-shadow duration-300">
+              <div class="relative flex-1 w-full"><i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i><input type="text" id="search-student-input" oninput="renderStudents()" placeholder="Tìm kiếm..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-teal-500 transition-colors"></div>
+              <div class="flex items-center gap-2 w-full md:w-auto"><select id="filter-student-class" onchange="renderStudents()" class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium outline-none focus:border-teal-500 transition-colors"></select></div>
+            </div>
+            <div id="students-table-container" class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs md:text-sm">
+                  <thead><tr class="border-b bg-slate-50 font-semibold text-slate-500"><th class="py-3 px-4">Họ và tên</th><th class="py-3 px-4">Ngày sinh & Tuổi</th><th class="py-3 px-4">Lớp đang theo học</th><th class="py-3 px-4">Phụ huynh & SĐT</th><th class="py-3 px-4">Trạng thái</th><th class="py-3 px-4 text-right">Thao tác</th></tr></thead>
+                  <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+              <div id="students-empty" class="hidden p-8 text-center text-slate-400"><i class="fa-solid fa-user-slash text-3xl mb-2"></i><p>Không tìm thấy học viên nào phù hợp.</p></div>
+            </div>
+            <div id="students-family-container" class="hidden space-y-4"><div id="students-family-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+          </div>
+
+          <div id="students-parent-view" class="hidden space-y-5 animate-fade-in-up">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
+              <div class="flex flex-wrap items-center gap-2"><button onclick="autoGenerateParentAccounts()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự sinh tài khoản từ SĐT</button></div>
+            </div>
+            <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs md:text-sm">
+                  <thead><tr class="border-b bg-slate-50 font-semibold text-slate-500"><th class="py-3 px-4">Tên Phụ huynh</th><th class="py-3 px-4">Tên đăng nhập (SĐT)</th><th class="py-3 px-4">Mật khẩu</th><th class="py-3 px-4">Con em liên kết</th><th class="py-3 px-4 text-right">Thao tác</th></tr></thead>
+                  <tbody id="parent-accounts-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+              <div id="parent-accounts-empty" class="hidden p-8 text-center text-slate-400"><i class="fa-solid fa-users-slash text-3xl mb-2"></i><p>Chưa có tài khoản phụ huynh nào.</p></div>
             </div>
           </div>
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-3 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-3 items-center hover:shadow-md transition-shadow duration-300">
-            <div class="relative flex-1 w-full"><i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i><input type="text" id="search-student-input" oninput="renderStudents()" placeholder="Tìm kiếm..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:border-teal-500 transition-colors"></div>
-            <div class="flex items-center gap-2 w-full md:w-auto"><select id="filter-student-class" onchange="renderStudents()" class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium outline-none focus:border-teal-500 transition-colors"></select></div>
-          </div>
-          <div id="students-table-container" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs md:text-sm">
-                <thead><tr class="border-b bg-slate-50 font-semibold text-slate-500"><th class="py-3 px-4">Họ và tên</th><th class="py-3 px-4">Ngày sinh & Tuổi</th><th class="py-3 px-4">Lớp đang theo học</th><th class="py-3 px-4">Phụ huynh & SĐT</th><th class="py-3 px-4">Trạng thái</th><th class="py-3 px-4 text-right">Thao tác</th></tr></thead>
-                <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
-            <div id="students-empty" class="hidden p-8 text-center text-slate-400"><i class="fa-solid fa-user-slash text-3xl mb-2"></i><p>Không tìm thấy học viên nào phù hợp.</p></div>
-          </div>
-          <div id="students-family-container" class="hidden space-y-4"><div id="students-family-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
         </section>
 
         <!-- FINANCE TAB -->
         <section id="tab-finance" class="hidden space-y-6">
-          <div class="bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl p-5 md:p-6 text-white shadow-lg flex items-center justify-between animate-fade-in-up">
+          <div class="bg-gradient-to-br from-green-500/90 to-emerald-600/90 backdrop-blur-xl border border-white/20 rounded-2xl p-5 md:p-6 text-white shadow-lg flex items-center justify-between animate-fade-in-up">
             <div>
               <h2 class="text-xl md:text-2xl font-bold tracking-tight"><i class="fa-solid fa-file-invoice-dollar mr-2 text-green-200"></i>Quản Lý Học Phí Lớp Học</h2>
               <p class="text-green-100 text-xs md:text-sm mt-1">Theo dõi số buổi đã học, trạng thái đóng tiền và thống kê doanh thu.</p>
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 animate-fade-in-up delay-100">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 animate-fade-in-up delay-100">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
               <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Báo cáo Lớp học</h3>
-              <select id="finance-class-filter" onchange="renderFinance()" class="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-semibold text-sm hover:shadow-sm transition-shadow focus:border-green-500"></select>
+              <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="setBulkDeadline()" class="px-3 py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors whitespace-nowrap"><i class="fa-solid fa-calendar-plus mr-1"></i> Đặt hạn nộp chung</button>
+                <select id="finance-class-filter" onchange="renderFinance()" class="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-semibold text-sm hover:shadow-sm transition-shadow focus:border-green-500"></select>
+              </div>
             </div>
             <div id="finance-class-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-0 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden animate-fade-in-up delay-200">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-0 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden animate-fade-in-up delay-200">
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-xs md:text-sm">
                 <thead>
@@ -571,32 +626,15 @@
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm animate-fade-in-up delay-300">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm animate-fade-in-up delay-300">
             <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 mb-4"><i class="fa-solid fa-chart-column text-green-500 mr-2"></i>Biểu đồ Doanh thu (12 Tháng)</h3>
             <div class="flex-1 min-h-[300px] relative"><canvas id="chart-finance-months"></canvas></div>
           </div>
         </section>
 
-        <!-- PARENT ACCOUNTS TAB -->
-        <section id="tab-parent-accounts" class="hidden space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div><h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Quản Lý Tài Khoản Phụ Huynh</h2></div>
-            <div class="flex flex-wrap items-center gap-2"><button onclick="autoGenerateParentAccounts()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự sinh tài khoản từ SĐT</button></div>
-          </div>
-          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs md:text-sm">
-                <thead><tr class="border-b bg-slate-50 font-semibold text-slate-500"><th class="py-3 px-4">Tên Phụ huynh</th><th class="py-3 px-4">Tên đăng nhập (SĐT)</th><th class="py-3 px-4">Mật khẩu</th><th class="py-3 px-4">Con em liên kết</th><th class="py-3 px-4 text-right">Thao tác</th></tr></thead>
-                <tbody id="parent-accounts-table-body" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
-            <div id="parent-accounts-empty" class="hidden p-8 text-center text-slate-400"><i class="fa-solid fa-users-slash text-3xl mb-2"></i><p>Chưa có tài khoản phụ huynh nào.</p></div>
-          </div>
-        </section>
-
         <!-- SETTINGS TAB -->
         <section id="tab-settings" class="hidden space-y-6 max-w-4xl mx-auto">
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
             <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-school text-teal-600"></i> Thông tin Lớp học Cô Thủy</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
               <div><label class="block text-slate-500 font-semibold mb-1">Tên lớp học</label><input type="text" id="setting-app-title" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 outline-none focus:border-teal-500 transition-colors"></div>
@@ -606,7 +644,7 @@
             </div>
             <div class="pt-2 flex justify-end"><button onclick="saveSchoolSettings()" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl text-xs md:text-sm shadow hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">Lưu thông tin</button></div>
           </div>
-          <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
+          <div class="glass-card rounded-2xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden p-5 border border-slate-100 dark:border-slate-700 shadow-sm space-y-4">
             <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-cloud text-purple-500"></i> Quản lý Đám mây & Sao lưu</h3>
             
             <div id="cloud-indicator-box" class="hidden p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-start gap-3">
@@ -631,13 +669,47 @@
       </main>
 
       <!-- MOBILE BOTTOM NAV -->
-      <nav class="md:hidden flex items-center justify-around bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-1.5 px-2 shrink-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav class="md:hidden flex items-center justify-around glass-panel border-t border-slate-200/50 dark:border-slate-700/50 py-1.5 px-2 shrink-0 z-20 shadow-[0_-4px_24px_rgba(0,0,0,0.05)]">
         <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-chart-pie text-lg mb-0.5"></i><span>Tổng quan</span></button>
         <button onclick="switchTab('schedule')" data-tab="schedule" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-calendar-days text-lg mb-0.5"></i><span>Lịch dạy</span></button>
-        <button onclick="switchTab('daily-attendance')" data-tab="daily-attendance" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-clipboard-user text-lg mb-0.5"></i><span>Điểm danh</span></button>
         <button onclick="switchTab('classes')" data-tab="classes" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-chalkboard-user text-lg mb-0.5"></i><span>Lớp học</span></button>
+        <button onclick="switchTab('students')" data-tab="students" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-user-graduate text-lg mb-0.5"></i><span>Học viên</span></button>
         <button onclick="switchTab('finance')" data-tab="finance" class="mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors"><i class="fa-solid fa-file-invoice-dollar text-lg mb-0.5"></i><span>Học phí</span></button>
       </nav>
+      
+      <!-- AI Bot UI -->
+      <div id="ai-bot-container" class="absolute bottom-20 right-4 z-50 md:bottom-6 md:right-6">
+        <button onclick="toggleBotChat()" id="bot-fab" class="w-14 h-14 bg-gradient-to-br from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl text-white flex items-center justify-center text-2xl hover:scale-110 hover:shadow-indigo-500/50 transition-all">
+          <i class="fa-solid fa-robot animate-bounce"></i>
+        </button>
+        <div id="bot-chat-window" class="absolute bottom-16 right-0 w-[calc(100vw-32px)] sm:w-80 md:w-96 glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden transition-all duration-300 opacity-0 pointer-events-none translate-y-4 origin-bottom-right" style="height: 450px; max-height: calc(100vh - 150px);">
+          <div class="bg-gradient-to-br from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 p-4 flex items-center justify-between shrink-0 shadow-md z-10">
+            <div class="flex items-center gap-3 text-white">
+              <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl backdrop-blur-sm shadow-inner"><i class="fa-solid fa-robot text-blue-50"></i></div>
+              <div><h3 class="font-bold tracking-wide">Trợ lý AI</h3><p class="text-[11px] text-blue-100 font-medium">Sẵn sàng hỗ trợ Cô Thủy</p></div>
+            </div>
+            <button onclick="toggleBotChat()" class="text-white/80 hover:text-white p-2 hover:bg-white/10 rounded-xl transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+          </div>
+          <div id="bot-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50 text-sm flex flex-col scroll-smooth">
+            <div class="flex items-start gap-2 max-w-[90%]">
+              <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-robot text-[10px]"></i></div>
+              <div class="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Dạ em chào Cô! Em là Trợ lý AI có thể giúp Cô thực hiện nhanh các thao tác.<br><br>
+                <strong class="text-indigo-600 dark:text-indigo-400">Cô có thể thử gõ lệnh:</strong><br>
+                <span class="text-slate-500 dark:text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis block w-full bg-slate-50 dark:bg-slate-900 p-1.5 rounded mt-1 border border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-slate-100" onclick="document.getElementById('bot-input').value='Tạo lớp học Tiếng Anh Giao Tiếp'; document.getElementById('bot-input').focus();">Tạo lớp học Tiếng Anh...</span>
+                <span class="text-slate-500 dark:text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis block w-full bg-slate-50 dark:bg-slate-900 p-1.5 rounded mt-1 border border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-slate-100" onclick="document.getElementById('bot-input').value='Điểm danh bé Bon'; document.getElementById('bot-input').focus();">Điểm danh bé...</span>
+                <span class="text-slate-500 dark:text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis block w-full bg-slate-50 dark:bg-slate-900 p-1.5 rounded mt-1 border border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-slate-100" onclick="document.getElementById('bot-input').value='Giao bài tập Unit 1 cho lớp mẫu giáo'; document.getElementById('bot-input').focus();">Giao bài tập...</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 shrink-0">
+            <form onsubmit="handleBotCommand(event)" class="flex gap-2">
+              <input type="text" id="bot-input" class="flex-1 glass-panel border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Nhập lệnh..." autocomplete="off">
+              <button type="submit" class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-colors shrink-0 shadow-sm"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -657,7 +729,7 @@
   <!-- 5. DANH SÁCH MODAL CHỨC NĂNG                              -->
   <!-- ======================================================== -->
   <div id="modal-print-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-2xl w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-lg"><i class="fa-solid fa-print text-teal-600"></i> In Thời Khóa Biểu</h3><button onclick="closeModal('modal-print-options')" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
       <div class="grid grid-cols-2 gap-3 text-sm">
         <label class="p-3 border-2 border-teal-500 bg-teal-50 rounded-xl cursor-pointer" id="print-opt-overview-card"><input type="radio" name="print-type" value="OVERVIEW" checked onchange="handlePrintTypeChange('OVERVIEW')" class="mr-2 accent-teal-600"> In Tổng Quan Tuần</label>
@@ -670,7 +742,7 @@
   </div>
 
   <div id="modal-parent-leave" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-sm w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-lg"><i class="fa-solid fa-file-signature text-purple-600"></i> Xin Phép Nghỉ</h3><button onclick="closeModal('modal-parent-leave')" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
       <div class="space-y-3 text-sm">
         <div><label class="block font-semibold mb-1">Ngày xin nghỉ:</label><input type="date" id="leave-date" class="w-full p-2 border rounded-lg outline-none focus:border-purple-500 transition-colors" required></div>
@@ -681,15 +753,23 @@
   </div>
 
   <div id="modal-parent-message" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-sm w-full p-6 shadow-2xl space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-lg"><i class="fa-solid fa-comment-dots text-pink-600"></i> Lời Nhắn Cho Cô</h3><button onclick="closeModal('modal-parent-message')" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
       <div class="space-y-3 text-sm"><div><label class="block font-semibold mb-1">Nội dung nhắn:</label><textarea id="message-content" rows="4" class="w-full p-2 border rounded-lg outline-none focus:border-pink-500 transition-colors" placeholder="Cô ơi hôm nay mẹ đón cháu muộn 15p nhé..." required></textarea></div></div>
       <div class="flex justify-end gap-2 pt-2 border-t"><button onclick="closeModal('modal-parent-message')" class="px-4 py-2 bg-slate-100 rounded-xl font-bold hover:bg-slate-200 transition-colors">Hủy</button><button onclick="submitParentMessage()" class="px-4 py-2 bg-pink-600 text-white rounded-xl font-bold hover:bg-pink-700 transition-colors"><i class="fa-solid fa-paper-plane mr-1"></i> Gửi Ngay</button></div>
     </div>
   </div>
 
+  <div id="modal-parent-feature" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-lg w-full p-6 shadow-2xl space-y-4 animate-fade-in-up max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-3 shrink-0"><h3 class="font-bold text-lg" id="modal-parent-feature-title">Tính năng</h3><button onclick="closeModal('modal-parent-feature')" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
+      <div id="modal-parent-feature-content" class="overflow-y-auto pr-2 space-y-3 text-sm flex-1"></div>
+      <div class="flex justify-end pt-2 border-t shrink-0"><button onclick="closeModal('modal-parent-feature')" class="px-5 py-2 bg-slate-100 rounded-xl font-bold hover:bg-slate-200 transition-colors">Đóng</button></div>
+    </div>
+  </div>
+
   <div id="modal-add-class" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh] space-y-4 animate-fade-in-up">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh] space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-lg" id="modal-class-title">Tạo Lớp Học Mới</h3><button onclick="closeModal('modal-add-class')" class="text-slate-400 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button></div>
       <form id="form-class" onsubmit="handleSaveClass(event)" class="space-y-3 text-sm">
         <input type="hidden" id="form-class-id">
@@ -802,7 +882,7 @@
   </div>
 
   <div id="modal-attendance" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl overflow-y-auto max-h-[92vh] space-y-4 animate-fade-in-up">
+    <div class="glass-card rounded-3xl border border-white/60 dark:border-slate-700/50 relative overflow-hidden max-w-xl w-full p-6 shadow-2xl overflow-y-auto max-h-[92vh] space-y-4 animate-fade-in-up">
       <div class="flex items-center justify-between border-b pb-3">
         <div><h3 class="font-bold text-lg text-slate-800" id="att-modal-title">Điểm Danh Lớp Học</h3><p class="text-xs text-slate-400" id="att-modal-subtitle">...</p></div>
         <button onclick="closeModal('modal-attendance')" class="text-slate-400 p-1 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -965,6 +1045,34 @@
       if (!appData.settings) appData.settings = {}; appData.settings.theme = isDark ? 'dark' : 'light';
       persistData(); renderAllCharts(); 
     }
+    
+    function setClassesSubTab(tab) {
+      document.getElementById('classes-list-view').classList.toggle('hidden', tab !== 'list');
+      document.getElementById('classes-att-view').classList.toggle('hidden', tab !== 'att');
+      const btnList = document.getElementById('btn-classes-list');
+      const btnAtt = document.getElementById('btn-classes-att');
+      if(tab === 'list') {
+         btnList.className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all";
+         btnAtt.className = "px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all";
+      } else {
+         btnAtt.className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all";
+         btnList.className = "px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all";
+      }
+    }
+    
+    function setStudentsSubTab(tab) {
+      document.getElementById('students-profile-view').classList.toggle('hidden', tab !== 'profile');
+      document.getElementById('students-parent-view').classList.toggle('hidden', tab !== 'parent');
+      const btnProf = document.getElementById('btn-students-profile');
+      const btnPar = document.getElementById('btn-students-parent');
+      if(tab === 'profile') {
+         btnProf.className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all";
+         btnPar.className = "px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all";
+      } else {
+         btnPar.className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-teal-700 shadow-sm transition-all";
+         btnProf.className = "px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all";
+      }
+    }
 
     /* ================= LƯU TRỮ VÀ DỮ LIỆU ================= */
     function persistData() { 
@@ -1092,11 +1200,11 @@
       mainView.style.opacity = 0;
 
       setTimeout(() => {
-        ['dashboard', 'schedule', 'daily-attendance', 'classes', 'students', 'finance', 'parent-accounts', 'settings'].forEach(s => {
+        ['dashboard', 'schedule', 'classes', 'students', 'finance', 'settings'].forEach(s => {
           document.getElementById('tab-' + s)?.classList.toggle('hidden', s !== tabId);
         });
         document.querySelectorAll('#desktop-nav .nav-btn').forEach(btn => {
-          btn.className = btn.getAttribute('data-tab') === tabId ? "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-sm bg-teal-50 text-teal-700 shadow-xs transition-all duration-300 hover:pl-5" : "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-all duration-300 hover:pl-5";
+          btn.className = btn.getAttribute('data-tab') === tabId ? "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-sm bg-teal-500/10 text-teal-700 dark:text-teal-400 font-bold shadow-[inset_4px_0_0_0_#0d9488] dark:shadow-[inset_4px_0_0_0_#2dd4bf] transition-all duration-300 hover:pl-5" : "nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-all duration-300 hover:pl-5";
         });
         document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
           btn.className = btn.getAttribute('data-tab') === tabId ? "mobile-nav-btn flex flex-col items-center py-1 px-2 text-teal-600 font-bold text-[11px] transition-colors" : "mobile-nav-btn flex flex-col items-center py-1 px-2 text-slate-400 font-medium text-[11px] transition-colors";
@@ -1105,11 +1213,9 @@
         // Bẫy lỗi độc lập
         try { if(tabId === 'dashboard') renderDashboard(); } catch(e){ console.error(e); }
         try { if(tabId === 'schedule') renderSchedule(); } catch(e){ console.error(e); }
-        try { if(tabId === 'daily-attendance') initDailyAttendanceTab(); } catch(e){ console.error(e); }
-        try { if(tabId === 'classes') renderClasses(); } catch(e){ console.error(e); }
-        try { if(tabId === 'students') renderStudents(); } catch(e){ console.error(e); }
+        try { if(tabId === 'classes') { renderClasses(); initDailyAttendanceTab(); } } catch(e){ console.error(e); }
+        try { if(tabId === 'students') { renderStudents(); renderParentAccounts(); } } catch(e){ console.error(e); }
         try { if(tabId === 'finance') { populateProgramSelects(); renderFinance(); } } catch(e){ console.error(e); }
-        try { if(tabId === 'parent-accounts') renderParentAccounts(); } catch(e){ console.error(e); }
         
         mainView.style.opacity = 1;
       }, 150);
@@ -1719,7 +1825,7 @@
       }
 
       let sumExpectedClass = 0, sumPaidClass = 0, sumRemainingClass = 0, studentsPaidCount = 0;
-      const currentDate = new Date(); const dueDate = 5;
+      const currentDate = new Date(); 
 
       const trHtml = targetStudents.map((st, index) => {
         const clsIds = filterClassId === 'ALL' ? (st.classIds || []) : [filterClassId];
@@ -1743,6 +1849,8 @@
         let remaining = expectedFee - totalPaid; if (remaining > 0) sumRemainingClass += remaining;
 
         if(isPaid && expectedFee > 0) studentsPaidCount++;
+        
+        let dueDate = st.tuitionDeadline ? parseInt(st.tuitionDeadline) : 5;
         let isLate = (!isPaid && currentDate.getDate() > dueDate);
 
         return `
@@ -1751,7 +1859,10 @@
             <td class="py-3 px-4"><span class="font-bold block text-slate-800 dark:text-slate-100">${escapeHtml(st.name)}</span><span class="text-[10px] text-slate-500">${clsIds.map(c=>appData.classes.find(x=>x.id===c)?.name).filter(Boolean).map(escapeHtml).join(', ')}</span></td>
             <td class="py-3 px-4 text-center font-bold text-teal-600">${totalSessionsAttended} buổi</td>
             <td class="py-3 px-4 text-right font-bold text-slate-700 dark:text-slate-300">${expectedFee.toLocaleString('vi-VN')} đ</td>
-            <td class="py-3 px-4 text-center font-mono text-[10px] text-slate-500">Mùng ${dueDate}</td>
+            <td class="py-3 px-4 text-center group">
+              <span class="font-mono text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Mùng ${dueDate}</span>
+              <button onclick="setIndividualDeadline('${st.id}', ${dueDate})" class="ml-1 text-slate-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-pen text-[10px]"></i></button>
+            </td>
             <td class="py-3 px-4 text-center">
               ${isPaid && expectedFee > 0 ? `<span class="px-2 py-1 rounded text-[10px] font-bold bg-green-100 text-green-700"><i class="fa-solid fa-check mr-1"></i>Đã đóng</span>` : (isLate ? `<span class="px-2 py-1 rounded text-[10px] font-bold bg-rose-100 text-rose-700 animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Quá hạn</span>` : `<span class="px-2 py-1 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Chưa đóng</span>`)}
             </td>
@@ -1795,6 +1906,108 @@
         data: { labels: months, datasets: [{ label: 'Doanh thu (VNĐ)', data: monthlyData, backgroundColor: '#10b981', borderRadius: 4 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return context.raw.toLocaleString('vi-VN') + ' đ'; } } } }, scales: { x: { grid: { display: false }, ticks: { color: isDark?'#94a3b8':'#64748b' } }, y: { grid: { color: isDark?'#334155':'#e2e8f0' }, ticks: { color: isDark?'#94a3b8':'#64748b', callback: function(value) { return value === 0 ? '0' : (value/1000000).toFixed(1) + 'M'; } } } } }
       });
+    }
+
+    /* ================= ĐẶT HẠN NỘP HỌC PHÍ ================= */
+    function setBulkDeadline() {
+      const clsId = document.getElementById('finance-class-filter').value;
+      let promptMsg = clsId === 'ALL' ? "Nhập ngày hạn nộp (từ 1-28) cho TẤT CẢ học viên:" : "Nhập ngày hạn nộp (từ 1-28) cho học viên trong lớp hiện tại:";
+      let d = prompt(promptMsg, "5");
+      if(!d) return;
+      let day = parseInt(d);
+      if(isNaN(day) || day < 1 || day > 28) return showToast("Ngày hạn nộp phải từ 1 đến 28", "error");
+      
+      let count = 0;
+      appData.students.forEach(st => {
+         if(clsId === 'ALL' || (Array.isArray(st.classIds) && st.classIds.includes(clsId))) {
+            st.tuitionDeadline = day;
+            count++;
+         }
+      });
+      if(count > 0) {
+         persistData(); renderFinance();
+         showToast(`Đã cập nhật hạn nộp mùng ${day} cho ${count} học viên`, "success");
+      }
+    }
+
+    function setIndividualDeadline(studentId, currentDeadline) {
+      const st = appData.students.find(s => s.id === studentId);
+      if(!st) return;
+      let d = prompt(`Nhập ngày hạn nộp (từ 1-28) cho học viên ${st.name}:`, currentDeadline);
+      if(!d) return;
+      let day = parseInt(d);
+      if(isNaN(day) || day < 1 || day > 28) return showToast("Ngày hạn nộp phải từ 1 đến 28", "error");
+      
+      st.tuitionDeadline = day;
+      persistData(); renderFinance();
+      showToast(`Đã cập nhật hạn nộp cho ${st.name}`, "success");
+    }
+
+    /* ================= IN THỜI KHÓA BIỂU ================= */
+    function openPrintModal() {
+      const select = document.getElementById('print-selected-class');
+      select.innerHTML = appData.classes.filter(c => c.status === 'ACTIVE').map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      handlePrintTypeChange('OVERVIEW');
+      openModal('modal-print-options');
+    }
+
+    function handlePrintTypeChange(type) {
+      if(type === 'OVERVIEW') {
+         document.getElementById('print-opt-overview-card').classList.replace('bg-slate-50', 'bg-teal-50');
+         document.getElementById('print-opt-overview-card').classList.replace('border-slate-200', 'border-teal-500');
+         document.getElementById('print-opt-class-card').classList.replace('bg-teal-50', 'bg-slate-50');
+         document.getElementById('print-opt-class-card').classList.replace('border-teal-500', 'border-slate-200');
+         document.getElementById('print-class-select-box').classList.add('hidden');
+      } else {
+         document.getElementById('print-opt-class-card').classList.replace('bg-slate-50', 'bg-teal-50');
+         document.getElementById('print-opt-class-card').classList.replace('border-slate-200', 'border-teal-500');
+         document.getElementById('print-opt-overview-card').classList.replace('bg-teal-50', 'bg-slate-50');
+         document.getElementById('print-opt-overview-card').classList.replace('border-teal-500', 'border-slate-200');
+         document.getElementById('print-class-select-box').classList.remove('hidden');
+      }
+      updatePrintPreviewContent(type);
+    }
+
+    function updatePrintPreviewContent(forcedType) {
+      const checkedInput = document.querySelector('input[name="print-type"]:checked');
+      const type = forcedType || (checkedInput ? checkedInput.value : 'OVERVIEW');
+      const previewArea = document.getElementById('print-preview-modal-area');
+      const realPrintArea = document.getElementById('print-timetable-content');
+      
+      let html = '';
+      if(type === 'OVERVIEW') {
+         document.getElementById('print-title-mode').textContent = "THỜI KHÓA BIỂU TỔNG QUAN TẤT CẢ CÁC LỚP";
+         const matrix = document.getElementById('matrix-timetable');
+         if(matrix) {
+            html = `<div class="overflow-hidden"><table class="w-full border-collapse border border-slate-300 text-xs text-center">${matrix.innerHTML}</table></div>`;
+         }
+      } else {
+         const clsId = document.getElementById('print-selected-class').value;
+         const cls = appData.classes.find(c => c.id === clsId);
+         if(cls) {
+            document.getElementById('print-title-mode').textContent = `THỜI KHÓA BIỂU - LỚP ${cls.name.toUpperCase()}`;
+            const daysMap = {"2": "Thứ 2", "3": "Thứ 3", "4": "Thứ 4", "5": "Thứ 5", "6": "Thứ 6", "7": "Thứ 7", "0": "Chủ Nhật"};
+            if(!cls.schedules || cls.schedules.length === 0) {
+               html = `<p class="text-center italic mt-4">Lớp này chưa có lịch học cố định.</p>`;
+            } else {
+               html = `<table class="w-full border-collapse border border-slate-300 mt-4 text-sm"><tr class="bg-slate-100"><th class="border border-slate-300 p-3">Thứ</th><th class="border border-slate-300 p-3">Khung Giờ</th><th class="border border-slate-300 p-3">Phòng Học / Ghi Chú</th></tr>`;
+               cls.schedules.forEach(sc => {
+                  html += `<tr><td class="border border-slate-300 p-3 font-bold text-center">${daysMap[sc.day]}</td><td class="border border-slate-300 p-3 text-center">${sc.time}</td><td class="border border-slate-300 p-3 text-center">Phòng Học Chính</td></tr>`;
+               });
+               html += `</table>`;
+            }
+         }
+      }
+      
+      // Cleanup for print
+      let cleanHtml = html.replace(/onclick="[^"]*"/g, '').replace(/hover:[^ ]*/g, '').replace(/cursor-pointer/g, '').replace(/shadow-[a-z]+/g, '');
+      previewArea.innerHTML = cleanHtml;
+      realPrintArea.innerHTML = cleanHtml;
+    }
+
+    function openPrintInNewWindow() {
+      updatePrintPreviewContent();
+      window.print();
     }
 
     function openPaymentModal(studentId, classId, amount) {
@@ -1915,6 +2128,687 @@
     }
     function deleteCurrentSession() { showCustomConfirm("Hủy", "Xóa ca này?", () => { appData.sessions = appData.sessions.filter(s => s.id !== currentAttendanceSessionId); persistData(); closeModal('modal-attendance'); renderAllViews(); showToast("Đã hủy buổi học"); }); }
 
+    /* ================= TÀI KHOẢN PHỤ HUYNH ================= */
+    function renderParentAccounts() {
+      const tbody = document.getElementById('parent-accounts-table-body');
+      const emptyMsg = document.getElementById('parent-accounts-empty');
+      const badge = document.getElementById('badge-parent-acc-count');
+      if(!tbody) return;
+
+      const parents = appData.users.filter(u => u.role === 'PARENT');
+      if (badge) badge.textContent = parents.length;
+
+      if(parents.length === 0) {
+        tbody.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+
+      tbody.innerHTML = parents.map(u => {
+        const children = appData.students.filter(st => (u.studentIds || []).includes(st.id));
+        const childrenNames = children.map(c => `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[10px] font-bold"><i class="fa-solid fa-child"></i> ${escapeHtml(c.name)}</span>`).join(' ');
+
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+            <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">${escapeHtml(u.name || 'Chưa cập nhật')}</td>
+            <td class="py-3 px-4 font-mono text-blue-600 dark:text-blue-400 font-semibold">${escapeHtml(u.username)}</td>
+            <td class="py-3 px-4 text-slate-500">
+              <div class="flex items-center gap-2">
+                <span id="pwd-txt-${u.id}" class="font-mono text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded min-w-[36px] text-center" data-pwd="${escapeHtml(u.password)}">***</span>
+                <button onclick="toggleRowPassword('${u.id}')" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fa-solid fa-eye" id="pwd-icon-${u.id}"></i></button>
+                <button onclick="resetParentPassword('${u.id}')" class="text-[10px] text-teal-600 hover:underline ml-1" title="Đặt lại mật khẩu mặc định (123)"><i class="fa-solid fa-key"></i> Đặt lại</button>
+              </div>
+            </td>
+            <td class="py-3 px-4 flex flex-wrap gap-1">${childrenNames || '<span class="text-xs text-slate-400 italic">Chưa liên kết</span>'}</td>
+            <td class="py-3 px-4 text-right">
+              <div class="flex justify-end gap-1">
+                <button onclick="editParentAccount('${u.id}')" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors" title="Sửa tài khoản"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteParentAccount('${u.id}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-colors" title="Xóa tài khoản"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleRowPassword(userId) {
+      const span = document.getElementById(`pwd-txt-${userId}`);
+      const icon = document.getElementById(`pwd-icon-${userId}`);
+      if(span.textContent === '***') {
+        span.textContent = span.getAttribute('data-pwd');
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        span.textContent = '***';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function editParentAccount(userId) {
+      const user = appData.users.find(u => u.id === userId);
+      if(!user) return;
+      document.getElementById('modal-parent-acc-title').textContent = 'Sửa Tài Khoản Phụ Huynh';
+      document.getElementById('form-parent-acc-id').value = user.id;
+      document.getElementById('form-parent-acc-name').value = user.name || '';
+      document.getElementById('form-parent-acc-user').value = user.username || '';
+      document.getElementById('form-parent-acc-pass').value = user.password || '';
+      
+      const studentsList = document.getElementById('form-parent-acc-students-list');
+      studentsList.innerHTML = appData.students.map(st => `
+        <label class="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+          <input type="checkbox" name="parent_students_cb" value="${st.id}" ${ (user.studentIds||[]).includes(st.id) ? 'checked' : '' } class="rounded text-teal-600 focus:ring-teal-500">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${escapeHtml(st.name)} ${st.nick ? '('+escapeHtml(st.nick)+')' : ''}</span>
+        </label>
+      `).join('');
+      
+      openModal('modal-add-parent-acc');
+    }
+
+    function handleSaveParentAccount(e) {
+      e.preventDefault();
+      const id = document.getElementById('form-parent-acc-id').value;
+      const name = document.getElementById('form-parent-acc-name').value.trim();
+      const user = document.getElementById('form-parent-acc-user').value.trim();
+      const pass = document.getElementById('form-parent-acc-pass').value.trim();
+      
+      const checkboxes = document.querySelectorAll('input[name="parent_students_cb"]:checked');
+      const studentIds = Array.from(checkboxes).map(cb => cb.value);
+      
+      let pUser = appData.users.find(u => u.id === id);
+      if(pUser) {
+         pUser.name = name;
+         pUser.username = user;
+         pUser.password = pass;
+         pUser.studentIds = studentIds;
+      }
+      persistData();
+      closeModal('modal-add-parent-acc');
+      renderParentAccounts();
+      showToast("Đã lưu thông tin phụ huynh", "success");
+    }
+
+    function autoGenerateParentAccounts() {
+      let createdCount = 0;
+      let linkedCount = 0;
+
+      appData.students.forEach(st => {
+        const phone = (st.phone || '').replace(/[^0-9]/g, '');
+        if(!phone || phone.length < 9) return;
+
+        let parent = appData.users.find(u => u.role === 'PARENT' && u.username === phone);
+        if(!parent) {
+          parent = {
+            id: 'u-' + Date.now() + Math.random().toString(36).substr(2, 5),
+            username: phone,
+            password: '123',
+            role: 'PARENT',
+            name: st.parent || `Phụ huynh của ${st.name}`,
+            studentIds: [st.id]
+          };
+          appData.users.push(parent);
+          createdCount++;
+        } else {
+          if(!parent.studentIds) parent.studentIds = [];
+          if(!parent.studentIds.includes(st.id)) {
+            parent.studentIds.push(st.id);
+            if(!parent.name || parent.name.startsWith('Phụ huynh của')) {
+               parent.name = st.parent || parent.name;
+            }
+            linkedCount++;
+          }
+        }
+      });
+
+      if(createdCount > 0 || linkedCount > 0) {
+        persistData();
+        renderParentAccounts();
+        showToast(`Đã tạo ${createdCount} tài khoản và liên kết ${linkedCount} bé!`, 'success');
+      } else {
+        showToast(`Không có tài khoản nào mới cần tạo.`, 'info');
+      }
+    }
+    
+    function resetParentPassword(userId) {
+      const user = appData.users.find(u => u.id === userId);
+      if(user) {
+        user.password = '123';
+        persistData();
+        showToast(`Đã đặt lại mật khẩu của ${user.name} thành "123"`, 'success');
+      }
+    }
+
+    function deleteParentAccount(userId) {
+      showCustomConfirm("Xóa Tài Khoản", "Xóa tài khoản phụ huynh này?", () => {
+        appData.users = appData.users.filter(u => u.id !== userId);
+        persistData();
+        renderParentAccounts();
+        showToast("Đã xóa tài khoản", "success");
+      });
+    }
+
+    /* ================= CỔNG PHỤ HUYNH ================= */
+    function renderParentPortal() {
+      if(!currentUser || currentUser.role !== 'PARENT') return;
+      document.getElementById('parent-user-name').textContent = currentUser.name || 'Phụ Huynh';
+      
+      const children = appData.students.filter(st => (currentUser.studentIds || []).includes(st.id));
+      const select = document.getElementById('parent-child-select');
+      const container = document.getElementById('parent-child-switcher-container');
+      
+      if(children.length === 0) {
+        document.getElementById('parent-welcome-child').textContent = `Chào Quý Phụ huynh ${currentUser.name}!`;
+        document.getElementById('parent-timeline-content').innerHTML = `<p class="text-sm text-slate-500">Chưa có dữ liệu học viên.</p>`;
+        container.classList.add('hidden');
+        return;
+      }
+      
+      if(children.length > 1) {
+        container.classList.remove('hidden');
+        select.innerHTML = children.map(c => `<option value="${c.id}">${c.name} ${c.nick ? '('+c.nick+')' : ''}</option>`).join('');
+        if(!activeParentChildId || !children.find(c => c.id === activeParentChildId)) activeParentChildId = children[0].id;
+        select.value = activeParentChildId;
+      } else {
+        container.classList.add('hidden');
+        activeParentChildId = children[0].id;
+      }
+      
+      renderParentPortalChild(activeParentChildId);
+    }
+    
+    function renderParentPortalChild(studentId) {
+      activeParentChildId = studentId;
+      const student = appData.students.find(s => s.id === studentId);
+      if(!student) return;
+      
+      document.getElementById('parent-welcome-child').textContent = `Tình hình học tập của ${student.nick || student.name}`;
+      
+      const studentClassIds = student.classIds || [];
+      let recentSessions = appData.sessions.filter(s => studentClassIds.includes(s.classId) && s.attendance && s.attendance[student.id]).sort((a,b) => new Date(b.date) - new Date(a.date));
+      
+      const tlDate = document.getElementById('parent-timeline-date');
+      const tlContent = document.getElementById('parent-timeline-content');
+      
+      if(recentSessions.length === 0) {
+        tlDate.textContent = 'Chưa có buổi học nào';
+        tlContent.innerHTML = `<p class="text-sm text-slate-500 italic">Hệ thống chưa ghi nhận nhật trình học tập nào của con.</p>`;
+        return;
+      }
+      
+      const lastSession = recentSessions[0];
+      const cls = appData.classes.find(c => c.id === lastSession.classId);
+      tlDate.textContent = formatDateVN(lastSession.date);
+      
+      const att = lastSession.attendance[student.id];
+      let statusColor = att.status === 'PRESENT' ? 'text-emerald-600 bg-emerald-100' : (att.status === 'LATE' ? 'text-amber-600 bg-amber-100' : 'text-rose-600 bg-rose-100');
+      let statusText = att.status === 'PRESENT' ? 'Có mặt' : (att.status === 'LATE' ? 'Đi muộn' : 'Vắng mặt');
+      
+      let html = `
+        <div class="absolute w-3 h-3 bg-teal-500 rounded-full -left-[7px] top-1 shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#1e293b]"></div>
+        <div>
+          <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1">Ca học lớp <span class="text-teal-600">${cls ? cls.name : 'Không rõ'}</span></h4>
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2 py-0.5 rounded-md text-xs font-semibold ${statusColor}">${statusText}</span>
+          </div>
+          
+          <div class="space-y-2 text-sm">
+            <div class="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+              <strong class="text-slate-700 dark:text-slate-300 block mb-1"><i class="fa-solid fa-book text-blue-500"></i> Nội dung bài học:</strong>
+              <p class="text-slate-600 dark:text-slate-400">${escapeHtml(lastSession.lessonTaught || 'Chưa cập nhật')}</p>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-100 dark:border-slate-700">
+              <strong class="text-slate-700 dark:text-slate-300 block mb-1"><i class="fa-solid fa-pen-to-square text-emerald-500"></i> Bài tập về nhà:</strong>
+              <p class="text-slate-600 dark:text-slate-400">${escapeHtml(lastSession.homework || 'Chưa cập nhật')}</p>
+              ${lastSession.homeworkLink ? `<a href="${escapeHtml(lastSession.homeworkLink)}" target="_blank" class="inline-block mt-2 text-xs font-semibold text-blue-600 hover:underline"><i class="fa-solid fa-link"></i> Link tài liệu</a>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      tlContent.innerHTML = html;
+    }
+
+    function openParentLeaveModal() {
+      if(!activeParentChildId) return showToast("Vui lòng chọn học viên", "warning");
+      document.getElementById('leave-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('leave-reason').value = '';
+      openModal('modal-parent-leave');
+    }
+
+    function submitParentLeave() {
+      const date = document.getElementById('leave-date').value;
+      const reason = document.getElementById('leave-reason').value.trim();
+      if(!date || !reason) return showToast("Vui lòng điền đủ thông tin", "warning");
+      
+      const st = appData.students.find(s=>s.id === activeParentChildId);
+      if (!appData.interactions) appData.interactions = [];
+      appData.interactions.push({
+        id: 'int-' + Date.now(),
+        type: 'LEAVE',
+        studentId: activeParentChildId,
+        studentName: st ? st.name : 'Unknown',
+        content: reason,
+        date: date,
+        status: 'UNREAD'
+      });
+      persistData();
+      closeModal('modal-parent-leave');
+      showToast("Đã gửi đơn xin nghỉ tới cô Thủy", "success");
+    }
+
+    function openParentMessageModal() {
+      if(!activeParentChildId) return showToast("Vui lòng chọn học viên", "warning");
+      document.getElementById('message-content').value = '';
+      openModal('modal-parent-message');
+    }
+
+    function submitParentMessage() {
+      const msg = document.getElementById('message-content').value.trim();
+      if(!msg) return showToast("Vui lòng nhập nội dung", "warning");
+      
+      const st = appData.students.find(s=>s.id === activeParentChildId);
+      if (!appData.interactions) appData.interactions = [];
+      appData.interactions.push({
+        id: 'int-' + Date.now(),
+        type: 'MESSAGE',
+        studentId: activeParentChildId,
+        studentName: st ? st.name : 'Unknown',
+        content: msg,
+        date: new Date().toISOString().split('T')[0],
+        status: 'UNREAD'
+      });
+      persistData();
+      closeModal('modal-parent-message');
+      showToast("Đã gửi lời nhắn tới cô Thủy", "success");
+    }
+
+    function showParentFeature(featureType) {
+      if(!activeParentChildId) return showToast("Vui lòng chọn học viên", "warning");
+      const st = appData.students.find(s=>s.id === activeParentChildId);
+      if(!st) return;
+      
+      const titleEl = document.getElementById('modal-parent-feature-title');
+      const contentEl = document.getElementById('modal-parent-feature-content');
+      
+      if(featureType === 'ATTENDANCE') {
+        titleEl.innerHTML = `<i class="fa-solid fa-calendar-check text-blue-600"></i> Chuyên Cần: ${escapeHtml(st.nick || st.name)}`;
+        const studentClassIds = st.classIds || [];
+        let sessions = appData.sessions.filter(s => studentClassIds.includes(s.classId) && s.attendance && s.attendance[st.id]).sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        if(sessions.length === 0) {
+           contentEl.innerHTML = `<p class="text-center italic text-slate-500 py-4">Chưa có dữ liệu điểm danh.</p>`;
+        } else {
+           contentEl.innerHTML = sessions.map(s => {
+             const cls = appData.classes.find(c => c.id === s.classId);
+             const att = s.attendance[st.id];
+             let statusColor = att.status === 'PRESENT' ? 'text-emerald-600 bg-emerald-100' : (att.status === 'LATE' ? 'text-amber-600 bg-amber-100' : 'text-rose-600 bg-rose-100');
+             let statusText = att.status === 'PRESENT' ? 'Có mặt' : (att.status === 'LATE' ? 'Đi muộn' : 'Vắng mặt');
+             return `
+               <div class="p-3 border rounded-xl flex items-center justify-between">
+                 <div>
+                   <p class="font-bold text-slate-800">${formatDateVN(s.date)}</p>
+                   <p class="text-[11px] text-slate-500">Lớp: ${cls ? cls.name : 'Không rõ'}</p>
+                 </div>
+                 <span class="px-2 py-1 rounded-lg text-xs font-bold ${statusColor}">${statusText}</span>
+               </div>
+             `;
+           }).join('');
+        }
+      } 
+      else if(featureType === 'HOMEWORK') {
+        titleEl.innerHTML = `<i class="fa-solid fa-book-open text-emerald-600"></i> Bài Tập VN: ${escapeHtml(st.nick || st.name)}`;
+        const studentClassIds = st.classIds || [];
+        let sessions = appData.sessions.filter(s => studentClassIds.includes(s.classId) && s.homework).sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        if(sessions.length === 0) {
+           contentEl.innerHTML = `<p class="text-center italic text-slate-500 py-4">Chưa có bài tập nào được giao.</p>`;
+        } else {
+           contentEl.innerHTML = sessions.map(s => `
+               <div class="p-3 border rounded-xl space-y-1">
+                 <p class="font-bold text-slate-800">Ngày giao: ${formatDateVN(s.date)}</p>
+                 <p class="text-xs text-slate-600 bg-slate-50 p-2 rounded">${escapeHtml(s.homework)}</p>
+                 ${s.homeworkLink ? `<a href="${escapeHtml(s.homeworkLink)}" target="_blank" class="text-xs text-blue-600 font-semibold hover:underline"><i class="fa-solid fa-link"></i> Xem tài liệu</a>` : ''}
+               </div>
+           `).join('');
+        }
+      }
+      else if(featureType === 'TUITION') {
+        titleEl.innerHTML = `<i class="fa-solid fa-file-invoice-dollar text-indigo-600"></i> Học Phí: ${escapeHtml(st.nick || st.name)}`;
+        const trxs = (appData.finance || []).filter(f => f.studentId === st.id).sort((a,b) => new Date(b.date) - new Date(a.date));
+        if(trxs.length === 0) {
+           contentEl.innerHTML = `<p class="text-center italic text-slate-500 py-4">Chưa có giao dịch học phí.</p>`;
+        } else {
+           contentEl.innerHTML = trxs.map(t => `
+               <div class="p-3 border rounded-xl flex items-center justify-between">
+                 <div>
+                   <p class="font-bold text-slate-800">${formatDateVN(t.date)}</p>
+                   <p class="text-[11px] text-slate-500">Ghi chú: ${escapeHtml(t.note || 'Không có')}</p>
+                 </div>
+                 <span class="font-mono font-bold ${t.type==='IN'?'text-emerald-600':'text-rose-600'}">${t.type==='IN'?'+':'-'} ${t.amount.toLocaleString()}đ</span>
+               </div>
+           `).join('');
+        }
+      }
+      else if(featureType === 'GRADES') {
+        titleEl.innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> Bảng Điểm: ${escapeHtml(st.nick || st.name)}`;
+        contentEl.innerHTML = `
+          <div class="p-8 text-center text-slate-500 space-y-2">
+            <i class="fa-solid fa-person-digging text-4xl text-slate-300"></i>
+            <p>Hệ thống bảng điểm định kỳ đang trong quá trình thử nghiệm. Vui lòng quay lại sau.</p>
+          </div>
+        `;
+      }
+      
+      openModal('modal-parent-feature');
+    }
+
+    /* ================= THỜI KHÓA BIỂU ================= */
+    let currentScheduleView = 'week';
+    let scheduleDate = new Date();
+
+    function setScheduleView(view) {
+      currentScheduleView = view;
+      document.getElementById('btn-view-week').className = view === 'week' ? 'px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all bg-white shadow-sm text-teal-700' : 'px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all text-slate-500 hover:text-slate-700';
+      document.getElementById('btn-view-day').className = view === 'day' ? 'px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all bg-white shadow-sm text-teal-700' : 'px-3.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all text-slate-500 hover:text-slate-700';
+      
+      if(view === 'week') {
+         document.getElementById('schedule-week-container').classList.remove('hidden');
+         document.getElementById('schedule-day-container').classList.add('hidden');
+      } else {
+         document.getElementById('schedule-week-container').classList.add('hidden');
+         document.getElementById('schedule-day-container').classList.remove('hidden');
+      }
+      renderSchedule();
+    }
+
+    function navigateSchedule(dir) {
+      if(currentScheduleView === 'week') {
+        scheduleDate.setDate(scheduleDate.getDate() + (dir * 7));
+      } else {
+        scheduleDate.setDate(scheduleDate.getDate() + dir);
+      }
+      renderSchedule();
+    }
+
+    function resetScheduleToday() {
+      scheduleDate = new Date();
+      renderSchedule();
+    }
+
+    function renderSchedule() {
+      let d = new Date(scheduleDate);
+      let day = d.getDay();
+      let diff = d.getDate() - day + (day == 0 ? -6:1);
+      let monday = new Date(d.setDate(diff));
+      monday.setHours(0,0,0,0);
+      
+      const weekdays = [];
+      for(let i=0; i<7; i++) {
+         let temp = new Date(monday);
+         temp.setDate(monday.getDate() + i);
+         weekdays.push(temp);
+      }
+
+      if(currentScheduleView === 'week') {
+         document.getElementById('schedule-range-label').textContent = `${formatDateVN(weekdays[0].toISOString().split('T')[0])} - ${formatDateVN(weekdays[6].toISOString().split('T')[0])}`;
+         
+         const headerRow = document.getElementById('week-header-row');
+         const daysNames = ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ Nhật'];
+         headerRow.innerHTML = weekdays.map((dt, i) => {
+            const dateStr = dt.toISOString().split('T')[0];
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            return `<div class="${isToday ? 'text-teal-600' : 'text-slate-600'}">${daysNames[i]}<br><span class="text-[10px] font-normal opacity-80">${dateStr.split('-')[2]}/${dateStr.split('-')[1]}</span></div>`;
+         }).join('');
+         
+         const columnsContainer = document.getElementById('week-columns-container');
+         columnsContainer.innerHTML = weekdays.map(dt => {
+            const dateStr = dt.toISOString().split('T')[0];
+            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            const sessions = (appData.sessions||[]).filter(s => s.date === dateStr).sort((a,b) => a.startTime.localeCompare(b.startTime));
+            let html = `<div class="p-2 space-y-2 ${isToday ? 'bg-teal-50/30' : ''}">`;
+            sessions.forEach(s => {
+               const cls = appData.classes.find(c => c.id === s.classId);
+               html += `
+                 <div class="bg-white border rounded p-2 text-[10px] shadow-sm cursor-pointer hover:border-teal-400" onclick="editSession('${s.id}')">
+                   <p class="font-bold text-teal-700">${s.startTime} - ${s.endTime}</p>
+                   <p class="font-semibold text-slate-800 line-clamp-1">${cls ? escapeHtml(cls.name) : 'Unknown'}</p>
+                   <p class="text-slate-500 mt-1"><i class="fa-solid fa-users"></i> ${(s.attendance?Object.keys(s.attendance).length:0)} học viên</p>
+                 </div>
+               `;
+            });
+            html += `</div>`;
+            return html;
+         }).join('');
+      } else {
+         const dateStr = scheduleDate.toISOString().split('T')[0];
+         document.getElementById('schedule-range-label').textContent = formatDateVN(dateStr);
+         document.getElementById('schedule-day-title').textContent = `Lịch dạy ngày ${formatDateVN(dateStr)}`;
+         const sessions = (appData.sessions||[]).filter(s => s.date === dateStr).sort((a,b) => a.startTime.localeCompare(b.startTime));
+         const list = document.getElementById('schedule-day-list');
+         if(sessions.length === 0) {
+            list.innerHTML = `<p class="text-slate-400 italic text-sm">Không có ca dạy nào trong ngày này.</p>`;
+         } else {
+            list.innerHTML = sessions.map(s => {
+               const cls = appData.classes.find(c => c.id === s.classId);
+               return `
+                 <div class="bg-white border rounded-xl p-3 flex justify-between items-center shadow-sm hover:shadow-md cursor-pointer transition-shadow" onclick="editSession('${s.id}')">
+                   <div>
+                     <p class="font-bold text-slate-800">${s.startTime} - ${s.endTime}</p>
+                     <p class="text-sm font-semibold text-teal-700">${cls ? escapeHtml(cls.name) : 'Unknown'}</p>
+                     <p class="text-xs text-slate-500 mt-1">${escapeHtml(s.lessonTaught || 'Chưa có nội dung')}</p>
+                   </div>
+                   <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-teal-600"><i class="fa-solid fa-pen"></i></div>
+                 </div>
+               `;
+            }).join('');
+         }
+      }
+      
+      renderMatrix();
+    }
+
+    function renderMatrix() {
+      const matrixBody = document.getElementById('matrix-timetable-body');
+      if(!matrixBody) return;
+      
+      const timeSlots = ["07:30 - 09:00", "09:00 - 10:30", "14:00 - 15:30", "15:30 - 17:00", "17:30 - 19:00", "19:00 - 20:30"];
+      const days = ["2", "3", "4", "5", "6", "7", "0"];
+      
+      let busyCount = 0;
+      let freeCount = 0;
+      
+      matrixBody.innerHTML = timeSlots.map(slot => {
+         let html = `<tr><td class="p-2 border border-slate-200 font-bold whitespace-nowrap text-center bg-slate-50 text-xs">${slot}</td>`;
+         days.forEach(d => {
+            const activeClasses = (appData.classes||[]).filter(c => c.status === 'ACTIVE' && c.schedules && c.schedules.some(sch => sch.day === d && sch.time === slot));
+            if(activeClasses.length > 0) {
+               busyCount++;
+               html += `<td class="p-1 border border-slate-200 text-center align-top min-w-[100px]">`;
+               activeClasses.forEach(c => {
+                  html += `<div class="bg-teal-50 text-teal-700 font-semibold text-[10px] p-1.5 rounded mb-1 shadow-xs border border-teal-100 cursor-pointer hover:bg-teal-100" onclick="switchTab('classes')">${escapeHtml(c.name)}</div>`;
+               });
+               html += `</td>`;
+            } else {
+               freeCount++;
+               html += `<td class="p-1 border border-slate-200 text-center bg-slate-50/50"></td>`;
+            }
+         });
+         html += `</tr>`;
+         return html;
+      }).join('');
+      
+      const bEl = document.getElementById('matrix-busy-count');
+      const fEl = document.getElementById('matrix-free-count');
+      if(bEl) bEl.textContent = `${busyCount} ca có lớp`;
+      if(fEl) fEl.textContent = `${freeCount} ca trống`;
+    }
+
+    /* ================= TRỢ LÝ AI (BOT) ================= */
+    let botChatOpen = false;
+    function toggleBotChat() {
+      botChatOpen = !botChatOpen;
+      const w = document.getElementById('bot-chat-window');
+      const fabIcon = document.querySelector('#bot-fab i');
+      if(botChatOpen) {
+        w.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+        fabIcon.classList.remove('animate-bounce');
+        setTimeout(() => document.getElementById('bot-input').focus(), 300);
+      } else {
+        w.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      }
+    }
+    
+    function addBotMessage(text, isUser = false) {
+      const container = document.getElementById('bot-chat-messages');
+      const div = document.createElement('div');
+      div.className = `flex items-start gap-2 max-w-[90%] ${isUser ? 'ml-auto flex-row-reverse' : ''}`;
+      
+      const avatar = isUser ? 
+        `<div class="w-7 h-7 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center shrink-0 mt-0.5 shadow-sm"><i class="fa-solid fa-user text-[10px]"></i></div>` : 
+        `<div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5 shadow-sm"><i class="fa-solid fa-robot text-[10px]"></i></div>`;
+      
+      const bubbleStyle = isUser ? 
+        `bg-teal-600 text-white rounded-2xl rounded-tr-sm` : 
+        `bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-700 rounded-2xl rounded-tl-sm`;
+        
+      div.innerHTML = `
+        ${avatar}
+        <div class="p-3 shadow-sm text-xs sm:text-sm leading-relaxed ${bubbleStyle}">
+          ${text}
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    function handleBotCommand(e) {
+      e.preventDefault();
+      const input = document.getElementById('bot-input');
+      const text = input.value.trim();
+      if(!text) return;
+      
+      input.value = '';
+      addBotMessage(escapeHtml(text), true);
+      
+      const typingId = 'typing-' + Date.now();
+      const container = document.getElementById('bot-chat-messages');
+      const typingDiv = document.createElement('div');
+      typingDiv.id = typingId;
+      typingDiv.className = `flex items-start gap-2 max-w-[90%]`;
+      typingDiv.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-robot text-[10px]"></i></div>
+        <div class="p-3 shadow-sm text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl rounded-tl-sm flex items-center gap-1">
+           <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></div>
+           <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+           <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+        </div>
+      `;
+      container.appendChild(typingDiv);
+      container.scrollTop = container.scrollHeight;
+
+      setTimeout(() => {
+        document.getElementById(typingId).remove();
+        processBotCommand(text.toLowerCase());
+      }, 700 + Math.random() * 800);
+    }
+    
+    window.botState = { askingExternal: false };
+
+    function processBotCommand(text) {
+      const lowerText = text.toLowerCase();
+      
+      // 1. Nếu đang chờ xác nhận tìm bên ngoài
+      if(window.botState.askingExternal) {
+         if(lowerText.match(/có|đồng ý|ok|tìm|được/)) {
+            window.botState.askingExternal = false;
+            addBotMessage("Dạ vâng! Em đang tiến hành tìm kiếm thông tin từ các nguồn dữ liệu mở rộng bên ngoài (Internet). Xin cô đợi trong giây lát... (Tính năng mô phỏng)");
+            return;
+         } else if (lowerText.match(/không|thôi|hủy|từ chối/)) {
+            window.botState.askingExternal = false;
+            addBotMessage("Dạ vâng, em đã hủy tìm kiếm bên ngoài ạ. Cô cần em giúp gì khác trong hệ thống không?");
+            return;
+         }
+      }
+
+      // Đặt lại state nếu gõ lệnh bình thường
+      window.botState.askingExternal = false;
+
+      // 2. Tra cứu dữ liệu có sẵn trong App
+      if(lowerText.match(/có bao nhiêu lớp|danh sách lớp|thống kê lớp/)) {
+         const classes = appData.classes || [];
+         const active = classes.filter(c => c.status === 'ACTIVE').length;
+         addBotMessage(`Dạ, hiện tại hệ thống đang có tổng cộng <b>${classes.length}</b> lớp học, trong đó có <b>${active}</b> lớp đang hoạt động ạ.`);
+         return;
+      }
+      if(lowerText.match(/có bao nhiêu học viên|có bao nhiêu học sinh|thống kê học|sĩ số/)) {
+         const students = appData.students || [];
+         const active = students.filter(s => s.status === 'ACTIVE').length;
+         addBotMessage(`Dạ, hiện tại trung tâm có <b>${students.length}</b> học viên, trong đó có <b>${active}</b> bé đang theo học ạ.`);
+         return;
+      }
+      if(lowerText.match(/tin nhắn|hộp thư|phụ huynh nhắn|lời nhắn|đơn xin nghỉ/)) {
+         const unread = (appData.interactions || []).filter(i => i.status === 'UNREAD');
+         if(unread.length > 0) {
+            let msg = `Dạ, cô đang có <b>${unread.length}</b> lời nhắn/đơn xin nghỉ chưa đọc từ phụ huynh:<br><br>`;
+            unread.forEach(i => {
+               msg += `- <b>${escapeHtml(i.studentName)}</b>: ${escapeHtml(i.content)}<br>`;
+            });
+            addBotMessage(msg);
+         } else {
+            addBotMessage("Dạ, hiện tại cô không có tin nhắn hay đơn xin nghỉ nào mới từ phụ huynh ạ.");
+         }
+         return;
+      }
+      if(lowerText.match(/lịch hôm nay|ca hôm nay|hôm nay dạy|hôm nay có lớp/)) {
+         const today = new Date().toISOString().split('T')[0];
+         const sessions = (appData.sessions || []).filter(s => s.date === today).sort((a,b) => a.startTime.localeCompare(b.startTime));
+         if(sessions.length > 0) {
+            let msg = `Dạ, hôm nay cô có <b>${sessions.length}</b> ca dạy:<br><br>`;
+            sessions.forEach(s => {
+               const cls = (appData.classes || []).find(c => c.id === s.classId);
+               msg += `- <b>${s.startTime}-${s.endTime}</b>: Lớp ${cls ? escapeHtml(cls.name) : 'Không rõ'}<br>`;
+            });
+            addBotMessage(msg);
+         } else {
+            addBotMessage("Dạ, theo hệ thống thì hôm nay cô trống lịch, không có ca dạy nào ạ!");
+         }
+         return;
+      }
+
+      // 3. Các lệnh thực thi hành động
+      if(lowerText.includes('tạo lớp') || lowerText.includes('thêm lớp')) {
+        let className = text.replace(/tạo lớp( học)?|thêm lớp( học)?/gi, '').trim();
+        if(className) {
+           appData.classes.push({ id: 'cls-' + Date.now(), program: 'Tiếng Anh Trẻ Em', sublevel: 'Mẫu giáo', name: className, status: 'ACTIVE' });
+           persistData(); renderClasses(); renderDashboard();
+           addBotMessage(`Dạ em đã tạo thành công lớp <b class='text-indigo-600'>${escapeHtml(className)}</b> rồi ạ! Cô có thể xem ở tab Lớp học.`);
+        } else {
+           addBotMessage("Dạ cô muốn tạo lớp tên là gì ạ? (VD: Tạo lớp Tiếng Anh Giao Tiếp)");
+        }
+        return;
+      } 
+      if (lowerText.includes('điểm danh')) {
+        addBotMessage("Dạ, hệ thống nhận diện điểm danh thông minh đang được nâng cấp. Tạm thời cô hãy vào tab <b class='text-indigo-600'>Điểm danh ngày</b> để thực hiện thủ công nhé!");
+        return;
+      }
+      if (lowerText.includes('giao bài tập') || lowerText.includes('bài tập')) {
+        addBotMessage("Dạ, cô muốn giao bài tập cho lớp nào ạ? Hiện tại cô có thể vào trực tiếp chi tiết lớp học, chọn <b>Thêm nhật trình</b> để giao bài tập nhanh nhất nhé!");
+        return;
+      }
+      if (lowerText.includes('thêm học sinh') || lowerText.includes('thêm học viên')) {
+        addBotMessage("Dạ, em đã mở form thêm học viên mới cho cô rồi đây ạ.");
+        openModal('modal-add-student');
+        return;
+      }
+      if (lowerText.includes('thời khóa biểu') || lowerText.includes('lịch dạy')) {
+        switchTab('schedule');
+        addBotMessage("Dạ em đã chuyển sang tab Thời khóa biểu cho cô rồi ạ!");
+        return;
+      }
+      
+      // 4. Nếu không khớp dữ liệu app và không phải lệnh -> Hỏi ý kiến tìm bên ngoài
+      window.botState.askingExternal = true;
+      addBotMessage("Dạ, thông tin này hiện không có sẵn trong hệ thống dữ liệu của Lớp học. Cô có muốn em mở rộng phạm vi tìm kiếm ra Internet không ạ? (Vui lòng xác nhận <i>'Có'</i> hoặc <i>'Không'</i>)");
+    }
+
     /* ================= KHỞI ĐỘNG ================= */
     window.addEventListener('DOMContentLoaded', () => {
       try {
@@ -1965,3 +2859,8 @@
   </script>
 </body>
 </html>
+
+
+
+
+
